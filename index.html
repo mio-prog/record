@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="robots" content="noindex">
+    <title>📚🎬 読書・映画記録</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚🎬 読書・映画記録</h1>
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="books">📚 読書</button>
+                <button class="tab-btn" data-tab="movies">🎬 映画</button>
+            </div>
+        </header>
+
+        <div id="booksTab" class="tab-content active">
+            <div class="controls">
+                <div class="search-area">
+                    <input type="text" class="search-box" id="searchBoxBooks" placeholder="タイトル・著者・タグで検索...">
+                    <select class="tag-filter" id="tagFilterBooks">
+                        <option value="">すべてのタグ</option>
+                    </select>
+                </div>
+                <div class="sort-buttons">
+                    <button class="sort-btn active" data-sort="date" data-type="books">
+                        📅 読了日順 <span id="dateOrderBooks">↓</span>
+                    </button>
+                    <button class="sort-btn" data-sort="title" data-type="books">
+                        🔤 タイトル順 <span id="titleOrderBooks">↑</span>
+                    </button>
+                    <button class="sort-btn" data-sort="rating" data-type="books">
+                        ⭐ 評価順 <span id="ratingOrderBooks">↓</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="books-grid" id="booksGrid"></div>
+            <div class="no-results" id="noResultsBooks" style="display: none;">
+                検索結果が見つかりませんでした
+            </div>
+        </div>
+
+        <div id="moviesTab" class="tab-content">
+            <div class="controls">
+                <div class="search-area">
+                    <input type="text" class="search-box" id="searchBoxMovies" placeholder="タイトル・監督・タグで検索...">
+                    <select class="tag-filter" id="tagFilterMovies">
+                        <option value="">すべてのタグ</option>
+                    </select>
+                </div>
+                <div class="sort-buttons">
+                    <button class="sort-btn active" data-sort="date" data-type="movies">
+                        📅 視聴日順 <span id="dateOrderMovies">↓</span>
+                    </button>
+                    <button class="sort-btn" data-sort="title" data-type="movies">
+                        🔤 タイトル順 <span id="titleOrderMovies">↑</span>
+                    </button>
+                    <button class="sort-btn" data-sort="rating" data-type="movies">
+                        ⭐ 評価順 <span id="ratingOrderMovies">↓</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="books-grid" id="moviesGrid"></div>
+            <div class="no-results" id="noResultsMovies" style="display: none;">
+                検索結果が見つかりませんでした
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content" id="modalContent">
+            <button class="modal-close" id="modalClose">×</button>
+            <div class="modal-header">
+                <div class="modal-cover" id="modalCover"></div>
+                <div class="modal-basic-info">
+                    <div class="modal-title" id="modalTitle"></div>
+                    <div class="modal-author" id="modalAuthor"></div>
+                    <div class="modal-date" id="modalDate"></div>
+                    <div class="modal-rating" id="modalRating"></div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="modal-section-title" id="modalReviewTitle">📝 感想</div>
+                    <div class="modal-section-content" id="modalReview"></div>
+                </div>
+                <div class="modal-section">
+
+                    <div class="modal-section-title" id="modalSynopsisTitle">📖 本のあらすじ</div>
+                    <div class="modal-section-content" id="modalSynopsis"></div>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">🏷️ タグ</div>
+                    <div class="modal-tags" id="modalTags"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

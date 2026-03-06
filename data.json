@@ -1,0 +1,61 @@
+{
+  "books": [
+    {
+      "title": "ZOO 1",
+      "coverUrl": "https://www.genspark.ai/api/files/s/WVA0dWsS?token=Z0FBQUFBQnBlTmhYZG5OelU1cTc0VXpHSFJWX1dUbW5mMVJyZm0yOFpJLW91N0xST2RvcDg1dTk4MUpnZHZhVm5EdHZia0NLSnJmbmVldFVXUTZwc09hOVF2VjNDZHRhbEVBUnJPY3paOVBCNnBfRWJna3hQMXI5YUpUUVoyTk9vUDlucFAzcmdwZS00TE81aVNaalNWeE5nYVVQVkxsc1JqdTJfdFRzV3VIMVpLekpEQlJJSi1iR1JsRDZpdFBMM3BlcWtxZV9DUkczang1bUR6TG1TR0xSSWNKR0c3QjlwazE0WVgwRTdEZUdfZ1VLY1RwV3lrYUwyZXo1NTNtRFhpUEtrdEQ0YWl6V3FCLTZKcDAzdE15dHFESWVEWHVVZXc9PQ",
+      "author": "乙一",
+      "finishedDate": "2026/01/19",
+      "rating": "4.5",
+      "review": "学生の時に読んだことある本だけど久しぶりに…！ 奇抜な設定や驚きに、短編だけど相変わらずの読み応えだった。 描写が丁寧で情景が浮かぶようだった。 「陽だまりの詩」はけっこう好き。",
+      "synopsis": "・カザリとヨーコ ・SEVEN ROOMS ・SO-farそふぁー ・陽だまりの詩 ・ZOO",
+      "tags": "ホラー, 短編",
+      "yomigana": "ずー1"
+    },
+    {
+      "title": "害虫の誕生",
+      "coverUrl": "https://www.genspark.ai/api/files/s/45TXXq92?token=Z0FBQUFBQnBlTmhYSFZLNWZKeFZ5VFR6UklaR1VkSGtLUTd3dUF0Wjd2NnlDQmRTVU9LMEkta3BaOU5TXzY0WnVTZkM2SlhPMENiYVdkLURYeWNScEpldzJuU0NyZG9ja3NhNGE4XzN5MkRPbGhycS10TGxJNVpNS3EwNzQ5OXBzTUp2MVkzSnFOQVBUQkQwaGc1VTNRTW9jX05MVXlqZnpvdTQzd2trR00yZlNDWkdoWVpydVZaWktjWE9PNXM0Qy1sWWJHS3VPVERvd01tV1k5cDdUVkRNOF9QNzV2dVIzSlhidHJ3WjhTTkt2VHp3UHZtUEo5SlhMQzhoRmFaQklqVnRZa2l4bnZ5RWhtNDhaUUhqd0FmSk54LWx3eDdXX2c9PQ",
+      "author": "瀬戸口明久",
+      "finishedDate": "2025/12/29",
+      "rating": "4",
+      "review": "〈害虫〉という概念がどうやって生まれてきたのか史実に基づいて解説された本。 社会的な脈絡や戦争など影響力のあるものによって変化していく価値観・学術分野が興味深い。 殺虫剤と毒ガスの関係性の部分は特に面白かった。 もう少し歴史を勉強してたらもっとわかりやすかったかも？",
+      "synopsis": "江戸時代、農民たちは虫を「天の怒り」として受け入れていた。しかし明治以降、近代農学の導入により、虫は駆除すべき「害虫」へと変化する。本書は、この概念の誕生と変遷を、農業技術、社会制度、科学思想の発展とともに追う。人間中心の視点がいかに自然観を変えたかを浮き彫りにする。",
+      "tags": "歴史, ノンフィクション, 科学史",
+      "yomigana": "がいちゅうのたんじょう"
+    },
+    {
+      "title": "雨の日も、晴れ男",
+      "coverUrl": "https://www.genspark.ai/api/files/s/k2xrWZLD?token=Z0FBQUFBQnBlTmhYbXpnWVBtYk5zdHdGY01IcjVsVHFZd3FjMWQ0N0FweG8tUjNNOUtEUjJCbE1YaF9GVEo1alRmcHJCQ1BUemdwQkZHMm9fUnEwUmttVzJxblV5WnA2cEtkNDdTT3U0bHhtOEoyOU5HT01MbWItQjVDbTZPdG1hOEk2bG1DaEIxbjQ0aGY4cjQwSHJHUmpfMUJMeU83WmJQUWxQMnRsWVB5cmFqS2RlSDVERjhkS3VaR0hXMXQ0QnFoMFNROTMyRFkwQlB4SnZPX2lIUXU1QUhZQ1ptcVZVLWZHTkg4WjRUSXhMamlMMzRPdWJCSDRheUZtTU8yMzY2dVpIdkYyZExoNUFjcEE3X3pCMWFSX3pyMzc3N05WR2c9PQ",
+      "author": "水野敬也",
+      "finishedDate": "2025/12/20",
+      "rating": "5",
+      "review": "アレックスの底なしの前向きさに元気がでる！ 気持ちが明るくなるのと、自分もがんばろうと思える本。 心が沈んだ時に効きそう。 アレックスは、死の直前でさえもー罪悪感に苦しむ僕とシュナを笑わせようとして、あんなことをしてくれた。 確かに、アレックスの行動はいついつも人を楽しませる...",
+      "synopsis": "次々と不幸が降りかかる男性が、どんな最悪な状況でもユーモアと前向きさを失わずに生き抜いていく物語。 「人生は起こる出来事より、どう受け取るかが大事」だと教えてくれる一冊。",
+      "tags": "自己啓発, 小説, ポジティブ",
+      "yomigana": "あめのひもはれおとこ"
+    },
+    {
+      "title": "機嫌のデザイン",
+      "coverUrl": "https://www.genspark.ai/api/files/s/BVWZWCBD?token=Z0FBQUFBQnBlTmhYQWxSUGtBbndkZTE4MmFkendUd0ZYVV9nU1dkMUEyNkF1VW1YOUM5dzVmV0ZiN3pNR1NsdkROTG5sQ2FuZ01EZjNYS3UxOXNFX3dSN1luWVNYbFZpdjdtNjFIVzNsdmRwZmZUai1VR0tZQjZIMGdmRi1KVUxHRDU3UnByMjJmQzMtOTlnM21NWmJrVnNONFdfRHlob3plQ203WTBUM2s0MGxuVkllUWJ1TVQ1cHJaYmhXNFF5bGh6WGhTNTBaREpYUXpFaHpLZmNvSTBKNjh3S2RoQU5wTU9TdzI5MU9rQzI0dVJ6c0tFeUdzUGFSSTNNOEVDekVKa0VSc2tpbU96dm1YbUZWUzlmdGJOYkhxeDdxaF95bFE9PQ",
+      "author": "秋田道夫",
+      "finishedDate": "2025/12/13",
+      "rating": "5",
+      "review": "対談形式でサクサク読みやすかった。言葉が丁寧で美しく、穏やかな気持ちになる。自分も秋田さんのようになりたいと思えた。購入したい。",
+      "synopsis": "プロダクトデザイナーが語る、まわりに左右されず機嫌よく生きるためのシンプルな考え方。仕事や人間関係における心の持ちようを優しく解説。",
+      "tags": "エッセイ, 自己啓発, デザイン",
+      "yomigana": "きげんのでざいん"
+    }
+  ],
+  "movies": [
+    {
+      "title": "鬼滅の刃 無限城編 第一章",
+      "posterUrl": "https://www.genspark.ai/api/files/s/qDuS9PQL?token=Z0FBQUFBQnBlTmhYbUZoOXNVcmdyVHV3T0dkeUhKYVd6dXRmNXV5UzJ2dVh4TlpObmlMUnVYNDRxNkpKeEh4QW1TZUNwX2xQREpSeVVyczhON2kxb0hlZ1Bhb0hYcjJ6TS1VeHlOT2lLMHk2dmFVRVBPd0FKZ0xnQldRNmlPYkgwaUQ0SHczT3lYeG5fcVY4TkhqOW9neUZLbFlidzdLcTI4YlJ3MUVrVnFhTFNLWjRnM0RoN0tzaTRQdUYzNWlNcDFHMzk3d1FJTUEyZWh3MzVydkFWcFp2NVFnWDFLbFJiS19UcW43OFU2TUJIMlNMTVRQWlBnTzVsWVp2VGZGMUV5VHNWYUp1SjB5a25KRmtkYWxhOVduQVZSMTlTd1U1LWc9PQ",
+      "director: "外崎春雄",
+      "watchedDate": "2025/09/19",
+      "rating": "5",
+      "review": "アクションシーンがかっこよすぎるし、城の作画、スピード感で大満足！ しのぶさんと童磨の戦いはしんどかった...",
+      "synopsis": "無惨により無限城に閉じ込められた鬼殺隊の柱たちと炭治郎たち。それぞれが散り散りになった無限城で、上弦の鬼たちとの決戦が始まる。",
+      "tags": "アニメ, アクション, 鬼滅の刃",
+      "yomigana": "きめつのやいばむげんじょうへんだいいっしょう"
+    }
+  ]
+}
