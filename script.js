@@ -25,16 +25,17 @@ async function loadAppData() {
     }
 }
 
-// 2. 星の生成（文字化けしにくい書き方）
+// 2. 星の生成（文字化けしないHTMLエンティティ版）
 function generateStars(rating) {
     const r = parseFloat(rating);
-    let stars = "";
-    for (let i = 1; i <= 5; i++) {
-        if (i <= Math.floor(r)) stars += "★";
-        else if (i === Math.ceil(r) && r % 1 !== 0) stars += "☆"; // 半分は白星で代用
-        else stars += "☆";
-    }
-    return stars;
+    const full = Math.floor(r);
+    const half = (r % 1 !== 0) ? 1 : 0;
+    const empty = 5 - full - half;
+    
+    // &#9733; が「★」、&#9734; が「☆」のHTMLコードです
+    return '&#9733;'.repeat(full) + 
+           (half ? '&#9734;' : '') + 
+           '&#9734;'.repeat(empty);
 }
 
 // 3. 画面描画（検索・ソート反映）
