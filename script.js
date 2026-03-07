@@ -94,7 +94,7 @@ function openModal(type, title) {
     document.getElementById('modalReview').innerHTML = (item.review || "").replace(/\n/g, '<br>');
     document.getElementById('modalSynopsis').textContent = item.synopsis || "記載なし";
     document.getElementById('modalTags').innerHTML = (item.tags || "").split(',').map(t => `<span class="tag-badge">${t.trim()}</span>`).join('');
-    document.getElementById('modalCover').innerHTML = `<img src="${item.coverUrl || item.posterUrl}">`;
+    document.getElementById('modalCover').innerHTML = `<img src="img/${type === 'books' ? 'book' : 'movie'}/${item.coverUrl || item.posterUrl}" class="book-cover" onerror="this.src='img/no-image.png'">`;
     document.getElementById('modal').classList.add('active');
 }
 
