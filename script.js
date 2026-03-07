@@ -93,7 +93,11 @@ function openModal(type, title) {
     document.getElementById('modalRating').innerHTML = generateStars(item.rating);
     document.getElementById('modalReview').innerHTML = (item.review || "").replace(/\n/g, '<br>');
     document.getElementById('modalSynopsis').textContent = item.synopsis || "記載なし";
-    document.getElementById('modalTags').innerHTML = (item.tags || "").split(',').map(t => `<span class="tag-badge">${t.trim()}</span>`).join('');
+    document.getElementById('modalTags').innerHTML = (item.tags || "").split(',').map(t => {
+    const tag = t.trim();
+    // クリック時に filterByTag 関数を呼ぶ
+    return `<span class="tag-badge" onclick="filterByTag('${type}', '${tag}')" style="cursor:pointer;">${tag}</span>`;
+}).join('');
     document.getElementById('modalCover').innerHTML = `<img src="img/${type === 'books' ? 'book' : 'movie'}/${item.coverUrl || item.posterUrl}" class="book-cover" onerror="this.src='img/no-image.png'">`;
     document.getElementById('modal').classList.add('active');
 }
@@ -140,3 +144,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('modalClose').onclick = () => document.getElementById('modal').classList.remove('active');
 });
+
+function filterByTag(type, tagName) {
+    // 1. フィルターのセレクトボックスをタグの名前に合わせる
+    const select = document.getElementById(`tagFilter${type.charAt(0).toUpperCase() + type.slice(1)}`);
+    select.value = tagName;
+    
+    // 2. モーダルを閉じる
+    document.getElementById('modal').classList.remove('active');
+    
+    // 3. 表示を更新
+    updateDisplay(type);
+    
+    // 4. もし別のタブがアクティブなら切り替える（必要であれば）
+    // （今は同じタブ内で動く前提でOKです）
+}
