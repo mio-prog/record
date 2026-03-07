@@ -1,9 +1,6 @@
 /**
- * 読書・映画記録 完全版
- * スプレッドシートの1行目は必ず以下にしてください：
- * type, title, creator, date, rating, review, synopsis, tags, coverUrl
+ * 読書・映画記録 完全版 (ジャンルフィルター対応・キャッシュ機能付き)
  */
-
 let booksData = [];
 let moviesData = [];
 let currentSort = { 
@@ -38,7 +35,6 @@ async function loadAppData() {
     }
 }
 
-// データの振り分けと初期表示
 function renderData(allData) {
     booksData = allData.filter(item => item.type === 'book');
     moviesData = allData.filter(item => item.type === 'movie');
@@ -50,30 +46,25 @@ function renderData(allData) {
 function generateStars(rating) {
     const r = parseFloat(rating) || 0;
     const percentage = (r / 5) * 100 - 0.5;
-    return `
-        <div class="rating-container">
-            ★★★★★
-            <div class="rating-fill" style="width: ${percentage}%">★★★★★</div>
-        </div>
-    `;
+    return `<div class="rating-container">★★★★★<div class="rating-fill" style="width: ${percentage}%">★★★★★</div></div>`;
 }
 
 function updateDisplay(type) {
     const data = type === 'books' ? booksData : moviesData;
     const grid = document.getElementById(`${type}Grid`);
     const searchBox = document.getElementById(`searchBox${type.charAt(0).toUpperCase() + type.slice(1)}`);
-    const tagFilter = document.getElementById(`tagFilter${type.charAt(0).toUpperCase() + type.slice(1)}`);
+    const genreFilter = document.getElementById(`genreFilter${type.charAt(0).toUpperCase() + type.slice(1)}`);
     
-    if (!searchBox || !tagFilter) return;
+    if (!searchBox || !genreFilter) return;
 
     const searchVal = searchBox.value.toLowerCase();
-    const tagVal = tagFilter.value;
+    const genreVal = genreFilter.value;
     
     let filtered = data.filter(item => {
         const text = (item.title + (item.creator || "") + (item.tags || "")).toLowerCase();
         const matchesSearch = text.includes(searchVal);
-        const matchesTag = tagVal === "" || (item.tags || "").split(',').map(t => t.trim()).includes(tagVal);
-        return matchesSearch && matchesTag;
+        const matchesGenre = genreVal === "" || (item.genre || "") === genreVal;
+        return matchesSearch && matchesGenre;
     });
 
     const sortInfo = currentSort[type];
@@ -113,35 +104,47 @@ function openModal(type, title) {
     document.getElementById('modalRating').innerHTML = generateStars(item.rating);
     document.getElementById('modalReview').innerHTML = (item.review || "").replace(/\n/g, '<br>');
     document.getElementById('modalSynopsis').textContent = item.synopsis || "記載なし";
+    
+    // タグはバッジとして表示（クリックで検索窓に反映させる）
     document.getElementById('modalTags').innerHTML = (item.tags || "").split(',').map(t => {
         const tag = t.trim();
-        return `<span class="tag-badge" onclick="filterByTag('${type}', '${tag}')" style="cursor:pointer;">${tag}</span>`;
+        return tag ? `<span class="tag-badge" onclick="filterByTag('${type}', '${tag}')" style="cursor:pointer;">${tag}</span>` : "";
     }).join('');
+    
     document.getElementById('modalCover').innerHTML = `<img src="img/${type === 'books' ? 'book' : 'movie'}/${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">`;
     document.getElementById('modal').classList.add('active');
 }
 
 function setupFilters() {
     ['Books', 'Movies'].forEach(type => {
-        const select = document.getElementById(`tagFilter${type}`);
+        const select = document.getElementById(`genreFilter${type}`);
         if (!select) return;
-        const allTags = new Set();
+        
+        const allGenres = new Set();
         (type === 'Books' ? booksData : moviesData).forEach(item => {
-            (item.tags || "").split(',').forEach(t => { if(t.trim()) allTags.add(t.trim()); });
+            if (item.genre) allGenres.add(item.genre);
         });
-        // 既存の選択肢をクリア
-        select.innerHTML = '<option value="">すべて</option>';
-        allTags.forEach(tag => {
+
+        select.innerHTML = '<option value="">すべてのジャンル</option>';
+        allGenres.forEach(genre => {
             const opt = document.createElement('option');
-            opt.value = tag; opt.textContent = tag;
+            opt.value = genre; opt.textContent = genre;
             select.appendChild(opt);
         });
         select.onchange = () => updateDisplay(type.toLowerCase());
     });
 }
 
+function filterByTag(type, tagName) {
+    const searchBox = document.getElementById(`searchBox${type.charAt(0).toUpperCase() + type.slice(1)}`);
+    searchBox.value = tagName;
+    document.getElementById('modal').classList.remove('active');
+    updateDisplay(type);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadAppData();
+    
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.onclick = () => {
             document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
@@ -149,9 +152,11 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById(`${btn.dataset.tab}Tab`).classList.add('active');
         };
     });
+
     ['Books', 'Movies'].forEach(type => {
         document.getElementById(`searchBox${type}`).oninput = () => updateDisplay(type.toLowerCase());
     });
+
     document.querySelectorAll('.sort-btn').forEach(btn => {
         btn.onclick = () => {
             const type = btn.dataset.type;
@@ -162,14 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
             updateDisplay(type);
         };
     });
+
     document.getElementById('modalClose').onclick = () => document.getElementById('modal').classList.remove('active');
 });
-
-function filterByTag(type, tagName) {
-    const select = document.getElementById(`tagFilter${type.charAt(0).toUpperCase() + type.slice(1)}`);
-    select.value = tagName;
-    document.getElementById('modal').classList.remove('active');
-    updateDisplay(type);
-}
-
-
