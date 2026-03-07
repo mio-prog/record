@@ -153,3 +153,7 @@ function filterByTag(type, tagName) {
     document.getElementById('modal').classList.remove('active');
     updateDisplay(type);
 }
+
+// 画面に表示する前に日付だけ切り出す
+const displayDate = item.date.split('T')[0]; 
+document.getElementById('modalDate').textContent = displayDate;
