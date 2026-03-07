@@ -170,3 +170,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('modalClose').onclick = () => document.getElementById('modal').classList.remove('active');
 });
+
+// 条件をクリアして表示を更新する関数
+function clearFilters(type) {
+    document.getElementById(`searchBox${type.charAt(0).toUpperCase() + type.slice(1)}`).value = '';
+    document.getElementById(`genreFilter${type.charAt(0).toUpperCase() + type.slice(1)}`).value = '';
+    updateDisplay(type);
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.onclick = () => {
+        // 既存の切り替え処理
+        document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+        const targetTab = btn.dataset.tab; // books or movies
+        document.getElementById(`${targetTab}Tab`).classList.add('active');
+        
+        // ★ ここで自動クリアを実行！
+        clearFilters(targetTab); 
+    };
+});

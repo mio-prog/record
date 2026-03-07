@@ -21,8 +21,9 @@
             <div class="controls">
                 <div class="search-area">
                     <input type="text" class="search-box" id="searchBoxBooks" placeholder="タイトル・著者・タグで検索...">
-                    <select id="genreFilterBooks"class="genre-filter">
+                    <select id="genreFilterBooks" class="genre-filter">
 						<option value="">すべてのジャンル</option>
+						<button class="clear-btn" onclick="clearFilters('books')">すべてクリア</button>
 					</select>
                 </div>
                 <div class="sort-buttons">
@@ -50,6 +51,7 @@
                     <input type="text" class="search-box" id="searchBoxMovies" placeholder="タイトル・監督・タグで検索...">
                     <select id="genreFilterMovies" class="genre-filter">
 						<option value="">すべてのジャンル</option>
+						<button class="clear-btn" onclick="clearFilters('books')">すべてクリア</button>
 					</select>
                 </div>
                 <div class="sort-buttons">
