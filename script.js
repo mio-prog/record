@@ -116,7 +116,7 @@ function filterByTag(type, tagName) {
 function generateStars(rating) {
     const r = parseFloat(rating) || 0;
     // 100%に対する割合を計算（5.0で100%）
-    const percent = (r / 5) * 100 +0.5;
+    const percent = (r / 5) * 100 + 0.8;
     
     return `
         <div class="star-rating">
