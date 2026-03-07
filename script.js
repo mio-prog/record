@@ -27,7 +27,7 @@ async function loadAppData() {
 function generateStars(rating) {
     const r = parseFloat(rating);
     // 5段階評価のうち、何パーセント分を金色にするか計算します
-    const percentage = (r / 5) * 100 -5;
+    const percentage = (r / 5) * 100 -0.5;
     
     return `
         <div class="rating-container">
