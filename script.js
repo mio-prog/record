@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('modalClose').onclick = () => document.getElementById('modal').classList.remove('active');
 	
-	// --- ソートボタンのイベント設定（ここを追加！） ---
+	// --- ソートボタンのイベント設定（矢印切り替え対応） ---
 document.querySelectorAll('.sort-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const type = btn.dataset.type; // books か movies
@@ -171,13 +171,19 @@ document.querySelectorAll('.sort-btn').forEach(btn => {
         
         // 1. ソート状態を更新
         currentSort[type].key = sortKey;
-        currentSort[type].asc = !currentSort[type].asc; // 押すたびに昇順/降順を反転
+        currentSort[type].asc = !currentSort[type].asc; // 昇順/降順を反転
         
-        // 2. ボタンの見た目（active）を更新
+        // 2. 矢印を切り替える（現在の asc が true なら ↑, false なら ↓）
+        const arrow = btn.querySelector('span');
+        if (arrow) {
+            arrow.textContent = currentSort[type].asc ? '↑' : '↓';
+        }
+        
+        // 3. ボタンの見た目（active）を更新
         document.querySelectorAll(`.sort-btn[data-type="${type}"]`).forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         
-        // 3. 表示を更新
+        // 4. 表示を更新
         updateDisplay(type);
     });
 });
