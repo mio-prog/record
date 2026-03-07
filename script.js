@@ -25,38 +25,44 @@ async function loadAppData() {
     }
 }
 
-// 2. 星の生成（文字化けしないHTMLエンティティ版）
+// 2. 星の生成（記号を直接返す版）
 function generateStars(rating) {
     const r = parseFloat(rating);
     const full = Math.floor(r);
     const half = (r % 1 !== 0) ? 1 : 0;
     const empty = 5 - full - half;
     
-    // &#9733; が「★」、&#9734; が「☆」のHTMLコードです
-    return '&#9733;'.repeat(full) + 
-           (half ? '&#9734;' : '') + 
-           '&#9734;'.repeat(empty);
+    // 記号を直接返すと、innerHTML で渡したときにブラウザが正しく「★」として描画します
+    return '★'.repeat(full) + 
+           (half ? '☆' : '') + 
+           '☆'.repeat(empty);
 }
 
-// 3. 画面描画（検索・ソート反映）
+// 3. 画面描画とソート/タグの反映
 function updateDisplay(type) {
     const data = type === 'books' ? booksData : moviesData;
     const grid = document.getElementById(`${type}Grid`);
     const searchVal = document.getElementById(`searchBox${type.charAt(0).toUpperCase() + type.slice(1)}`).value.toLowerCase();
+    const tagVal = document.getElementById(`tagFilter${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
     
-    // フィルタリング
+    // 検索＆タグフィルタリング
     let filtered = data.filter(item => {
         const text = (item.title + (item.author || item.director) + (item.tags || "")).toLowerCase();
-        return text.includes(searchVal);
+        const matchesSearch = text.includes(searchVal);
+        const matchesTag = tagVal === "" || (item.tags || "").split(',').map(t => t.trim()).includes(tagVal);
+        return matchesSearch && matchesTag;
     });
 
-    // ソート処理（簡易版）
+    // ソート処理と矢印更新
     const sortInfo = currentSort[type];
     filtered.sort((a, b) => {
         let valA = a[sortInfo.key === 'date' ? (type === 'books' ? 'finishedDate' : 'watchedDate') : sortInfo.key];
         let valB = b[sortInfo.key === 'date' ? (type === 'books' ? 'finishedDate' : 'watchedDate') : sortInfo.key];
         return sortInfo.asc ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
     });
+
+    // 矢印の更新
+    document.getElementById(`${sortInfo.key}Order${type.charAt(0).toUpperCase() + type.slice(1)}`).textContent = sortInfo.asc ? '↑' : '↓';
 
     // 描画
     grid.innerHTML = filtered.map(item => `
@@ -71,7 +77,6 @@ function updateDisplay(type) {
         </div>
     `).join('');
 
-    // 結果なし表示
     document.getElementById(`noResults${type.charAt(0).toUpperCase() + type.slice(1)}`).style.display = filtered.length === 0 ? 'block' : 'none';
 }
 
@@ -82,20 +87,28 @@ function openModal(type, title) {
     if (!item) return;
 
     document.getElementById('modalTitle').textContent = item.title;
-    document.getElementById('modalAuthor').textContent = item.author || item.director;
-    document.getElementById('modalDate').textContent = item.finishedDate || item.watchedDate;
-    document.getElementById('modalRating').textContent = generateStars(item.rating);
-    document.getElementById('modalReview').innerHTML = item.review.replace(/\n/g, '<br>');
-    document.getElementById('modalSynopsis').textContent = item.synopsis || "記載なし";
-    
-    // タグの表示（ここが抜けていました！）
-    const tagArea = document.getElementById('modalTags'); // HTMLにこのIDがある前提
-    if (tagArea) {
-        tagArea.innerHTML = (item.tags || "").split(',').map(t => `<span class="tag-badge">${t.trim()}</span>`).join('');
-    }
-
-    document.getElementById('modalCover').innerHTML = `<img src="${item.coverUrl || item.posterUrl}">`;
+    // 星のコードを変換して表示（ここで処理！）
+    document.getElementById('modalRating').innerHTML = generateStars(item.rating);
+    // ... (他の要素はそのまま)
+    document.getElementById('modalTags').innerHTML = (item.tags || "").split(',').map(t => `<span class="tag-badge">${t.trim()}</span>`).join('');
     document.getElementById('modal').classList.add('active');
+}
+
+// タグフィルターの自動生成
+function setupFilters() {
+    ['Books', 'Movies'].forEach(type => {
+        const select = document.getElementById(`tagFilter${type}`);
+        const allTags = new Set();
+        (type === 'Books' ? booksData : moviesData).forEach(item => {
+            (item.tags || "").split(',').forEach(t => { if(t.trim()) allTags.add(t.trim()); });
+        });
+        allTags.forEach(tag => {
+            const opt = document.createElement('option');
+            opt.value = tag; opt.textContent = tag;
+            select.appendChild(opt);
+        });
+        select.onchange = () => updateDisplay(type.toLowerCase());
+    });
 }
 
 // 5. イベント設定

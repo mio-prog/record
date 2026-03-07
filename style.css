@@ -366,3 +366,9 @@ header h1 {
     color: white;
     font-size: 18px;
 }
+
+#modalRating {
+    font-size: 1.5rem;
+    color: #ffd700; /* 星を金色にする */
+    line-height: 1;
+}
