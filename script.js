@@ -67,7 +67,7 @@ function updateDisplay(type) {
 
     grid.innerHTML = filtered.map(item => `
         <div class="book-card" onclick="openModal('${type}', '${item.title.replace(/'/g, "\\'")}')">
-            <img src="${item.coverUrl || item.posterUrl}" class="book-cover">
+            <img src="img/${type === 'books' ? 'book' : 'movie'}/${item.coverUrl || item.posterUrl}" class="book-cover" onerror="this.src='img/no-image.png'">
             <div class="book-info">
                 <div class="book-title">${item.title}</div>
                 <div class="book-author">${item.author || item.director}</div>

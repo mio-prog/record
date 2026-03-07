@@ -2,7 +2,7 @@
   "books": [
     {
       "title": "ZOO 1",
-      "coverUrl": "https://www.genspark.ai/api/files/s/WVA0dWsS?token=Z0FBQUFBQnBlTmhYZG5OelU1cTc0VXpHSFJWX1dUbW5mMVJyZm0yOFpJLW91N0xST2RvcDg1dTk4MUpnZHZhVm5EdHZia0NLSnJmbmVldFVXUTZwc09hOVF2VjNDZHRhbEVBUnJPY3paOVBCNnBfRWJna3hQMXI5YUpUUVoyTk9vUDlucFAzcmdwZS00TE81aVNaalNWeE5nYVVQVkxsc1JqdTJfdFRzV3VIMVpLekpEQlJJSi1iR1JsRDZpdFBMM3BlcWtxZV9DUkczang1bUR6TG1TR0xSSWNKR0c3QjlwazE0WVgwRTdEZUdfZ1VLY1RwV3lrYUwyZXo1NTNtRFhpUEtrdEQ0YWl6V3FCLTZKcDAzdE15dHFESWVEWHVVZXc9PQ",
+      "coverUrl": "zoo1.jpg",
       "author": "乙一",
       "finishedDate": "2026/01/19",
       "rating": "4.5",
@@ -48,7 +48,7 @@
   "movies": [
     {
       "title": "鬼滅の刃 無限城編 第一章",
-      "posterUrl": "https://www.genspark.ai/api/files/s/qDuS9PQL?token=Z0FBQUFBQnBlTmhYbUZoOXNVcmdyVHV3T0dkeUhKYVd6dXRmNXV5UzJ2dVh4TlpObmlMUnVYNDRxNkpKeEh4QW1TZUNwX2xQREpSeVVyczhON2kxb0hlZ1Bhb0hYcjJ6TS1VeHlOT2lLMHk2dmFVRVBPd0FKZ0xnQldRNmlPYkgwaUQ0SHczT3lYeG5fcVY4TkhqOW9neUZLbFlidzdLcTI4YlJ3MUVrVnFhTFNLWjRnM0RoN0tzaTRQdUYzNWlNcDFHMzk3d1FJTUEyZWh3MzVydkFWcFp2NVFnWDFLbFJiS19UcW43OFU2TUJIMlNMTVRQWlBnTzVsWVp2VGZGMUV5VHNWYUp1SjB5a25KRmtkYWxhOVduQVZSMTlTd1U1LWc9PQ",
+      "posterUrl": "kimetsu1.jpg",
       "director": "外崎春雄",
       "watchedDate": "2025/09/19",
       "rating": "5",
