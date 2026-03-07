@@ -103,6 +103,20 @@ header h1 {
     cursor: pointer;
 }
 
+.clear-btn {
+    background: none;
+    border: none;
+    color: #868e96;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 14px;
+	text-align: right;
+}
+
+.clear-btn:hover {
+    color: #343a40;
+}
+
 .sort-buttons {
     display: flex;
     gap: 10px;
