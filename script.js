@@ -3,6 +3,7 @@
  * スプレッドシートの1行目は必ず以下にしてください：
  * type, title, creator, date, rating, review, synopsis, tags, coverUrl
  */
+
 let booksData = [];
 let moviesData = [];
 let currentSort = { 
@@ -12,21 +13,38 @@ let currentSort = {
 
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw3_O5HjDqZQ-3DbHn3WiiRmDWVRu8cwI2A4fIb2xUsLHEbRGWqHaXPolNmwcUWsYer/exec';
 
+// データ読み込み＆キャッシュ処理
 async function loadAppData() {
-    try {
-        const response = await fetch(SHEET_URL);
-        if (!response.ok) throw new Error('データ読み込み失敗');
-        const allData = await response.json();
-        
-        booksData = allData.filter(item => item.type === 'book');
-        moviesData = allData.filter(item => item.type === 'movie');
+    const CACHE_KEY = 'appData_cache';
+    const TIME_KEY = 'appData_time';
+    
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    const cachedTime = localStorage.getItem(TIME_KEY);
+    const isExpired = !cachedTime || (Date.now() - cachedTime > 60000); // 1分で期限切れ
 
-        updateDisplay('books');
-        updateDisplay('movies');
-        setupFilters();
-    } catch (error) {
-        console.error("Error:", error);
+    if (cachedData && !isExpired) {
+        renderData(JSON.parse(cachedData));
+    } else {
+        try {
+            const response = await fetch(SHEET_URL);
+            if (!response.ok) throw new Error('通信エラー');
+            const allData = await response.json();
+            localStorage.setItem(CACHE_KEY, JSON.stringify(allData));
+            localStorage.setItem(TIME_KEY, Date.now().toString());
+            renderData(allData);
+        } catch (e) {
+            if (cachedData) renderData(JSON.parse(cachedData));
+        }
     }
+}
+
+// データの振り分けと初期表示
+function renderData(allData) {
+    booksData = allData.filter(item => item.type === 'book');
+    moviesData = allData.filter(item => item.type === 'movie');
+    updateDisplay('books');
+    updateDisplay('movies');
+    setupFilters();
 }
 
 function generateStars(rating) {
@@ -154,7 +172,4 @@ function filterByTag(type, tagName) {
     updateDisplay(type);
 }
 
-// 画面に表示する前に日付だけ切り出す
-const displayDate = item.date.split('T')[0]; 
-document.getElementById('modalDate').textContent = displayDate;
 
