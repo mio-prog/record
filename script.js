@@ -115,7 +115,15 @@ function filterByTag(type, tagName) {
 
 function generateStars(rating) {
     const r = parseFloat(rating) || 0;
-    return `<div class="rating-container">★★★★★<div class="rating-fill" style="width: ${(r / 5) * 100 - 0.5}%">★★★★★</div></div>`;
+    // 100%に対する割合を計算（5.0で100%）
+    const percent = (r / 5) * 100 +0.5;
+    
+    return `
+        <div class="star-rating">
+            <div class="star-base">★★★★★</div>
+            <div class="star-current" style="width: ${percent}%">★★★★★</div>
+        </div>
+    `;
 }
 
 // --- 日付を日本時間で正しくフォーマットする関数（共通関数） ---

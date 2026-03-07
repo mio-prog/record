@@ -234,22 +234,35 @@ header h1 {
 }
 
 .book-rating {
-    /* フォントサイズを少しだけ調整（見切れ防止） */
-    font-size: 16px; 
-    color: #FFD700;
-    
-    /* 星が絶対に改行されないようにする */
-    white-space: nowrap; 
-    
-    /* 星同士の間隔を少し詰めて横幅を稼ぐ */
-    letter-spacing: -2px; 
-    
-    /* 上下の余白を調整して見切れを解消 */
+    width: 100%;             /* カードの幅に合わせる */
+    overflow: hidden;        /* はみ出しをカット */
+    margin-top: auto;        /* カードの一番下に配置 */
+}
+
+/* 星全体を包む器 */
+.star-rating {
+    position: relative;
+    display: inline-block;
+    font-size: 15px; /* ★ここを14px〜18pxの間で調整してください */
     line-height: 1;
-    margin-top: 4px;
-    
-    /* 左寄せで安定させる */
-    display: block;
+    letter-spacing: -2px; /* ★間隔を詰めるとカード内に収まりやすくなります */
+    cursor: default;
+    user-select: none;
+}
+
+/* 下地のグレーの星 */
+.star-base {
+    color: #e0e0e0; /* 薄いグレー */
+}
+
+/* 上に乗る金色の星 */
+.star-current {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: #FFD700; /* ゴールド */
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .modal {
