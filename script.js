@@ -1,7 +1,12 @@
 /**
  * 読書・映画記録 完全版
  */
-
+let booksData = [];
+let moviesData = [];
+let currentSort = { 
+    books: { key: 'date', asc: false }, 
+    movies: { key: 'date', asc: false } 
+};
 
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw3_O5HjDqZQ-3DbHn3WiiRmDWVRu8cwI2A4fIb2xUsLHEbRGWqHaXPolNmwcUWsYer/exec';
 
