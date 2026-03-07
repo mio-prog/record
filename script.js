@@ -158,17 +158,3 @@ function filterByTag(type, tagName) {
 const displayDate = item.date.split('T')[0]; 
 document.getElementById('modalDate').textContent = displayDate;
 
-// データをローカルストレージに保存する例
-async function loadAppData() {
-    const cachedData = localStorage.getItem('appData');
-    if (cachedData) {
-        // キャッシュがあればすぐに表示
-        processData(JSON.parse(cachedData));
-    }
-    
-    // バックグラウンドで最新版をフェッチし、更新があれば書き換える
-    const response = await fetch(SHEET_URL);
-    const allData = await response.json();
-    localStorage.setItem('appData', JSON.stringify(allData));
-    processData(allData);
-}
