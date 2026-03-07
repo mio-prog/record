@@ -373,3 +373,22 @@ header h1 {
     color: #ffd700; /* 星を金色にする */
     line-height: 1;
 }
+
+/* 星の表示エリア全体 */
+.rating-container {
+    display: inline-block;
+    position: relative;
+    font-size: 1.2rem;
+    color: #ccc; /* 空の星の色（灰色） */
+    letter-spacing: 2px;
+}
+
+/* 塗りつぶされた星（上に重ねる色） */
+.rating-fill {
+    color: #ffd700; /* 塗りつぶしの星の色（金色） */
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden; /* はみ出した分を隠す */
+    white-space: nowrap;
+}

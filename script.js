@@ -23,12 +23,19 @@ async function loadAppData() {
     }
 }
 
-// 星の生成（直接記号を返す）
+// 星の生成（CSSで塗りつぶす賢い方法）
 function generateStars(rating) {
     const r = parseFloat(rating);
-    return '★'.repeat(Math.floor(r)) + (r % 1 !== 0 ? '☆' : '') + '☆'.repeat(5 - Math.ceil(r));
+    // 5段階評価のうち、何パーセント分を金色にするか計算します
+    const percentage = (r / 5) * 100;
+    
+    return `
+        <div class="rating-container">
+            ★★★★★
+            <div class="rating-fill" style="width: ${percentage}%">★★★★★</div>
+        </div>
+    `;
 }
-
 // 画面描画
 function updateDisplay(type) {
     const data = type === 'books' ? booksData : moviesData;
