@@ -2,18 +2,18 @@
  * 読書・映画記録 完全版
  */
 
-let booksData = [];
-let moviesData = [];
-let currentSort = { books: { key: 'date', asc: false }, movies: { key: 'date', asc: false } };
+
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw3_O5HjDqZQ-3DbHn3WiiRmDWVRu8cwI2A4fIb2xUsLHEbRGWqHaXPolNmwcUWsYer/exec';
 
 async function loadAppData() {
     try {
-        const response = await fetch('data.json');
-        if (!response.ok) throw new Error('JSON読み込み失敗');
-        const data = await response.json();
+        const response = await fetch(SHEET_URL);
+        if (!response.ok) throw new Error('データ読み込み失敗');
+        const allData = await response.json();
         
-        booksData = data.books || [];
-        moviesData = data.movies || [];
+        // シートから取得した全データを、type列を見て振り分ける
+        booksData = allData.filter(item => item.type === 'book');
+        moviesData = allData.filter(item => item.type === 'movie');
 
         updateDisplay('books');
         updateDisplay('movies');
