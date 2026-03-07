@@ -201,6 +201,7 @@ header h1 {
     /* paddingを少し小さくして、下の情報の見切れを防ぎます */
     padding: 12px 10px;
     background: #fff;
+	min-height: 80px;
 }
 
 .book-title {
@@ -233,9 +234,22 @@ header h1 {
 }
 
 .book-rating {
-    font-size: 18px;
-	line-height: 1.2;
+    /* フォントサイズを少しだけ調整（見切れ防止） */
+    font-size: 16px; 
     color: #FFD700;
+    
+    /* 星が絶対に改行されないようにする */
+    white-space: nowrap; 
+    
+    /* 星同士の間隔を少し詰めて横幅を稼ぐ */
+    letter-spacing: -2px; 
+    
+    /* 上下の余白を調整して見切れを解消 */
+    line-height: 1;
+    margin-top: 4px;
+    
+    /* 左寄せで安定させる */
+    display: block;
 }
 
 .modal {
