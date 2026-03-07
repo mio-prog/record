@@ -65,6 +65,7 @@ function updateDisplay(type) {
         return sortInfo.asc ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
     });
 
+    // ここから先がカード生成の完全なコードです
     grid.innerHTML = filtered.map(item => `
         <div class="book-card" onclick="openModal('${type}', '${item.title.replace(/'/g, "\\'")}')">
             <img src="img/${type === 'books' ? 'book' : 'movie'}/${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">
@@ -161,4 +162,24 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(`searchBox${type}`).oninput = () => updateDisplay(type.toLowerCase());
     });
     document.getElementById('modalClose').onclick = () => document.getElementById('modal').classList.remove('active');
+	
+	// --- ソートボタンのイベント設定（ここを追加！） ---
+document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const type = btn.dataset.type; // books か movies
+        const sortKey = btn.dataset.sort; // date, title, rating
+        
+        // 1. ソート状態を更新
+        currentSort[type].key = sortKey;
+        currentSort[type].asc = !currentSort[type].asc; // 押すたびに昇順/降順を反転
+        
+        // 2. ボタンの見た目（active）を更新
+        document.querySelectorAll(`.sort-btn[data-type="${type}"]`).forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // 3. 表示を更新
+        updateDisplay(type);
+    });
+});
+	
 });
