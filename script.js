@@ -72,7 +72,7 @@ function updateDisplay(type) {
             <div class="book-info">
                 <div class="book-title">${item.title}</div>
                 <div class="book-author">${item.creator || ""}</div>
-                <div class="book-date">${(item.date || "").split('T')[0]}</div>
+                <div class="book-date">${formatJSTDate(item.date)}</div>
                 <div class="book-rating">${generateStars(item.rating)}</div>
             </div>
         </div>
@@ -118,6 +118,17 @@ function generateStars(rating) {
     return `<div class="rating-container">★★★★★<div class="rating-fill" style="width: ${(r / 5) * 100 - 0.5}%">★★★★★</div></div>`;
 }
 
+// --- 日付を日本時間で正しくフォーマットする関数（共通関数） ---
+function formatJSTDate(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    // 日本時間(JST)として年月日を抽出
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
 // --- モーダル表示処理（HTMLの全ての項目に対応） ---
 function openModal(type, title) {
     const data = type === 'books' ? booksData : moviesData;
@@ -127,7 +138,10 @@ function openModal(type, title) {
     // ヘッダー情報
     document.getElementById('modalTitle').textContent = item.title;
     document.getElementById('modalAuthor').textContent = item.creator || "";
-    document.getElementById('modalDate').textContent = (item.date || "").split('T')[0];
+    
+    // ★ここを共通関数で修正：1日ズレない正しい日付を表示
+    document.getElementById('modalDate').textContent = formatJSTDate(item.date);
+    
     document.getElementById('modalRating').innerHTML = generateStars(item.rating);
     
     // カバー画像
