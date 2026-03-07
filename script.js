@@ -71,6 +71,7 @@ function updateDisplay(type) {
             <div class="book-info">
                 <div class="book-title">${item.title}</div>
                 <div class="book-author">${item.creator || ""}</div>
+                <div class="book-date">${(item.date || "").split('T')[0]}</div>
                 <div class="book-rating">${generateStars(item.rating)}</div>
             </div>
         </div>
