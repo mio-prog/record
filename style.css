@@ -162,7 +162,7 @@ header h1 {
     transition: transform 0.3s, box-shadow 0.3s;
     cursor: pointer;
     /* カード全体の高さを固定したい場合はここで指定 */
-    height: 400px; 
+    height: 380px; 
     display: flex;
     flex-direction: column;
 }
@@ -175,7 +175,7 @@ header h1 {
 .book-cover {
     width: 100%;
     /* 以前の210pxから広げる（例：260px） */
-    height: 260px; 
+    height: 250px; 
     object-fit: cover;
     background: #f5f5f5;
 }
