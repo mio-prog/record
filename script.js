@@ -1,5 +1,5 @@
 /**
- * 読書・映画記録 完全版
+ * 読書・映画記録 完全版（グラフ描画対応）
  */
 let booksData = [];
 let moviesData = [];
@@ -7,10 +7,11 @@ let currentSort = {
     books: { key: 'date', asc: false }, 
     movies: { key: 'date', asc: false } 
 };
+let genreChart = null; // グラフを保持する変数
 
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw3_O5HjDqZQ-3DbHn3WiiRmDWVRu8cwI2A4fIb2xUsLHEbRGWqHaXPolNmwcUWsYer/exec';
 
-// --- 1. 統計を計算する関数（一番上に定義） ---
+// --- 1. 統計・グラフ描画関数 ---
 function updateStats() {
     const totalBooksEl = document.getElementById('totalBooks');
     const totalMoviesEl = document.getElementById('totalMovies');
@@ -22,8 +23,37 @@ function updateStats() {
     const allData = [...booksData, ...moviesData];
     const totalRating = allData.reduce((sum, item) => sum + (parseFloat(item.rating) || 0), 0);
     const avg = allData.length > 0 ? (totalRating / allData.length).toFixed(1) : "0.0";
-    
     if (avgRatingEl) avgRatingEl.textContent = avg;
+
+    // グラフ描画
+    drawGenreChart();
+}
+
+function drawGenreChart() {
+    const canvas = document.getElementById('genreChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const allData = [...booksData, ...moviesData];
+    const counts = {};
+    allData.forEach(item => {
+        const g = item.genre || "未分類";
+        counts[g] = (counts[g] || 0) + 1;
+    });
+
+    if (genreChart) genreChart.destroy();
+
+    genreChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(counts),
+            datasets: [{
+                data: Object.values(counts),
+                backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40']
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
 }
 
 // --- 2. データ読み込み＆表示処理 ---
@@ -55,7 +85,7 @@ function renderData(allData) {
     updateDisplay('books');
     updateDisplay('movies');
     setupFilters();
-    updateStats(); // 定義済みなのでエラーにならない
+    updateStats(); 
 }
 
 // --- 3. その他の共通関数 ---
@@ -180,7 +210,7 @@ function openModal(type, title) {
     document.getElementById('modal').classList.add('active');
 }
 
-// --- 4. 初期化（一番最後） ---
+// --- 4. 初期化 ---
 document.addEventListener('DOMContentLoaded', () => {
     loadAppData();
     document.querySelectorAll('.tab-btn').forEach(btn => {
