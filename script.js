@@ -10,7 +10,23 @@ let currentSort = {
 
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw3_O5HjDqZQ-3DbHn3WiiRmDWVRu8cwI2A4fIb2xUsLHEbRGWqHaXPolNmwcUWsYer/exec';
 
-// --- データ読み込み＆キャッシュ処理 ---
+// --- 1. 統計を計算する関数（一番上に定義） ---
+function updateStats() {
+    const totalBooksEl = document.getElementById('totalBooks');
+    const totalMoviesEl = document.getElementById('totalMovies');
+    const avgRatingEl = document.getElementById('avgRating');
+    
+    if (totalBooksEl) totalBooksEl.textContent = booksData.length;
+    if (totalMoviesEl) totalMoviesEl.textContent = moviesData.length;
+    
+    const allData = [...booksData, ...moviesData];
+    const totalRating = allData.reduce((sum, item) => sum + (parseFloat(item.rating) || 0), 0);
+    const avg = allData.length > 0 ? (totalRating / allData.length).toFixed(1) : "0.0";
+    
+    if (avgRatingEl) avgRatingEl.textContent = avg;
+}
+
+// --- 2. データ読み込み＆表示処理 ---
 async function loadAppData() {
     const CACHE_KEY = 'appData_cache';
     const TIME_KEY = 'appData_time';
@@ -33,16 +49,16 @@ async function loadAppData() {
     }
 }
 
-// --- 表示処理 ---
 function renderData(allData) {
     booksData = allData.filter(item => item.type === 'book');
     moviesData = allData.filter(item => item.type === 'movie');
     updateDisplay('books');
     updateDisplay('movies');
     setupFilters();
-	updateStats();
+    updateStats(); // 定義済みなのでエラーにならない
 }
 
+// --- 3. その他の共通関数 ---
 function updateDisplay(type) {
     const data = type === 'books' ? booksData : moviesData;
     const grid = document.getElementById(`${type}Grid`);
@@ -66,7 +82,6 @@ function updateDisplay(type) {
         return sortInfo.asc ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
     });
 
-    // ここから先がカード生成の完全なコードです
     grid.innerHTML = filtered.map(item => `
         <div class="book-card" onclick="openModal('${type}', '${item.title.replace(/'/g, "\\'")}')">
             <img src="img/${type === 'books' ? 'book' : 'movie'}/${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">
@@ -83,7 +98,6 @@ function updateDisplay(type) {
     if (noRes) noRes.style.display = filtered.length === 0 ? 'block' : 'none';
 }
 
-// --- フィルター・ユーティリティ ---
 function setupFilters() {
     ['Books', 'Movies'].forEach(type => {
         const select = document.getElementById(`genreFilter${type}`);
@@ -114,40 +128,37 @@ function filterByTag(type, tagName) {
     updateDisplay(type);
 }
 
-function generateStars(rating) {
-    const r = parseFloat(rating) || 0;
-    // 100%に対する割合を計算（5.0で100%）
-    const percent = (r / 5) * 100 + 0.8;
-    
-    return `
-        <div class="star-rating">
-            <div class="star-base">★★★★★</div>
-            <div class="star-current" style="width: ${percent}%">★★★★★</div>
-        </div>
-    `;
+function filterByAuthor(type, authorName) {
+    const typeUpper = type.charAt(0).toUpperCase() + type.slice(1);
+    const searchBox = document.getElementById(`searchBox${typeUpper}`);
+    if (searchBox) {
+        searchBox.value = authorName;
+        document.getElementById('modal').classList.remove('active');
+        updateDisplay(type);
+    }
 }
 
-// --- 日付を日本時間で正しくフォーマットする関数（共通関数） ---
+function generateStars(rating) {
+    const r = parseFloat(rating) || 0;
+    const percent = (r / 5) * 100 + 0.8;
+    return `<div class="star-rating"><div class="star-base">★★★★★</div><div class="star-current" style="width: ${percent}%">★★★★★</div></div>`;
+}
+
 function formatJSTDate(dateString) {
     if (!dateString) return "";
     const date = new Date(dateString);
-    // 日本時間(JST)として年月日を抽出
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
 }
 
-// --- モーダル表示処理 ---
 function openModal(type, title) {
     const data = type === 'books' ? booksData : moviesData;
     const item = data.find(d => d.title === title);
     if (!item) return;
 
-    // ヘッダー情報
     document.getElementById('modalTitle').textContent = item.title;
-    
-    // 著者名（ここはこのままでOK！）
     const authorName = item.creator || "";
     const modalAuthorEl = document.getElementById('modalAuthor');
     if (authorName) {
@@ -158,99 +169,47 @@ function openModal(type, title) {
 
     document.getElementById('modalDate').textContent = formatJSTDate(item.date);
     document.getElementById('modalRating').innerHTML = generateStars(item.rating);
-    
-    // カバー画像
     document.getElementById('modalCover').innerHTML = `<img src="img/${type === 'books' ? 'book' : 'movie'}/${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">`;
-
-    // 本文・あらすじ・タグ
     document.getElementById('modalReview').innerHTML = (item.review || "").replace(/\n/g, '<br>');
     document.getElementById('modalSynopsis').textContent = item.synopsis || "記載なし";
-    
     document.getElementById('modalTags').innerHTML = (item.tags || "").split(',').map(t => {
         const tag = t.trim();
         return tag ? `<span class="tag-badge" onclick="filterByTag('${type}', '${tag}')" style="cursor:pointer;">${tag}</span>` : "";
     }).join('');
 
-    // モーダルを表示
     document.getElementById('modal').classList.add('active');
 }
 
-// --- 著者名で絞り込む関数（openModalの外に置く！） ---
-function filterByAuthor(type, authorName) {
-    const typeUpper = type.charAt(0).toUpperCase() + type.slice(1);
-    const searchBox = document.getElementById(`searchBox${typeUpper}`);
-    if (searchBox) {
-        searchBox.value = authorName;
-        // モーダルを閉じる
-        document.getElementById('modal').classList.remove('active');
-        // 表示を更新
-        updateDisplay(type);
-    }
-}
-
-
-// --- 初期化 ---
+// --- 4. 初期化（一番最後） ---
 document.addEventListener('DOMContentLoaded', () => {
     loadAppData();
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.onclick = () => {
-    document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
-    btn.classList.add('active');
-    const targetTab = btn.dataset.tab;
-    document.getElementById(`${targetTab}Tab`).classList.add('active');
-    
-    // 統計タブ以外ならフィルターをクリア
-    if (targetTab !== 'stats') {
-        clearFilters(targetTab);
-    }
-};
+            document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            const targetTab = btn.dataset.tab;
+            document.getElementById(`${targetTab}Tab`).classList.add('active');
+            if (targetTab !== 'stats') clearFilters(targetTab);
+        };
     });
+    
     ['Books', 'Movies'].forEach(type => {
         document.getElementById(`searchBox${type}`).oninput = () => updateDisplay(type.toLowerCase());
     });
+    
     document.getElementById('modalClose').onclick = () => document.getElementById('modal').classList.remove('active');
-	
-	// --- ソートボタンのイベント設定（矢印切り替え対応） ---
-document.querySelectorAll('.sort-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const type = btn.dataset.type; // books か movies
-        const sortKey = btn.dataset.sort; // date, title, rating
-        
-        // 1. ソート状態を更新
-        currentSort[type].key = sortKey;
-        currentSort[type].asc = !currentSort[type].asc; // 昇順/降順を反転
-        
-        // 2. 矢印を切り替える（現在の asc が true なら ↑, false なら ↓）
-        const arrow = btn.querySelector('span');
-        if (arrow) {
-            arrow.textContent = currentSort[type].asc ? '↑' : '↓';
-        }
-        
-        // 3. ボタンの見た目（active）を更新
-        document.querySelectorAll(`.sort-btn[data-type="${type}"]`).forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        // 4. 表示を更新
-        updateDisplay(type);
+    
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const type = btn.dataset.type;
+            const sortKey = btn.dataset.sort;
+            currentSort[type].key = sortKey;
+            currentSort[type].asc = !currentSort[type].asc;
+            const arrow = btn.querySelector('span');
+            if (arrow) arrow.textContent = currentSort[type].asc ? '↑' : '↓';
+            document.querySelectorAll(`.sort-btn[data-type="${type}"]`).forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateDisplay(type);
+        });
     });
-});
-	
-// --- 統計を計算して表示する関数 ---
-function updateStats() {
-    // 読書数・映画数
-    document.getElementById('totalBooks').textContent = booksData.length;
-    document.getElementById('totalMovies').textContent = moviesData.length;
-    
-    // 平均評価の計算
-    const allData = [...booksData, ...moviesData];
-    const totalRating = allData.reduce((sum, item) => sum + (parseFloat(item.rating) || 0), 0);
-    const avg = allData.length > 0 ? (totalRating / allData.length).toFixed(1) : "0.0";
-    
-    // 平均評価を表示する要素が存在する場合のみ更新
-    const avgElement = document.getElementById('avgRating');
-    if (avgElement) {
-        avgElement.textContent = avg;
-    }
-}	
-	
 });
