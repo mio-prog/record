@@ -219,12 +219,21 @@ header h1 {
 /* カード内のタイトルだけ消す */
 .book-card .book-title {
     display: none;
+	/* --- ここから追加 --- */
+    white-space: nowrap;      /* 改行を禁止する */
+    overflow: hidden;         /* はみ出した分を隠す */
+    text-overflow: ellipsis;  /* はみ出しを「…」にする */
+ 
 }
 
 .book-author {
-    font-size: 13px;
+    font-size: 12px;
     color: #666;
     margin-bottom: 4px;
+    white-space: nowrap;      /* 改行を禁止する */
+    overflow: hidden;         /* はみ出した分を隠す */
+    text-overflow: ellipsis;  /* はみ出しを「…」にする */    
+    display: block;           /* 確実に1行として扱う */
 }
 
 .book-date {
