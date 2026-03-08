@@ -363,6 +363,18 @@ header h1 {
     margin-bottom: 6px;
 }
 
+/* モーダル内の著者名のスタイル */
+.clickable-author {
+    color: #4A90E2; /* リンクっぽい青色 */
+    text-decoration: underline; /* 下線 */
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.clickable-author:hover {
+    opacity: 0.7;
+}
+
 .modal-date {
     font-size: 13px;
     color: #999;
@@ -434,27 +446,30 @@ header h1 {
     font-size: 18px;
 }
 
-#modalRating {
-    font-size: 1.5rem;
-    color: #ffd700; /* 星を金色にする */
-    line-height: 1;
+/*統計*/
+.stats-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
 }
 
-/* 星の表示エリア全体 */
-.rating-container {
-    display: inline-block;
-    position: relative;
-    font-size: 1.2rem;
-    color: #ccc; /* 空の星の色（灰色） */
-    letter-spacing: 2px;
+.stat-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* 塗りつぶされた星（上に重ねる色） */
-.rating-fill {
-    color: #ffd700; /* 塗りつぶしの星の色（金色） */
-    position: absolute;
-    top: 0;
-    left: 0;
-    overflow: hidden; /* はみ出した分を隠す */
-    white-space: nowrap;
+.stat-card h3 {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.stat-card p {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
 }
