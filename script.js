@@ -9,6 +9,7 @@ let currentSort = {
 };
 let genreChart = null; // グラフを保持する変数
 
+
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw3_O5HjDqZQ-3DbHn3WiiRmDWVRu8cwI2A4fIb2xUsLHEbRGWqHaXPolNmwcUWsYer/exec';
 
 // --- 1. 統計・グラフ描画関数 ---
@@ -25,7 +26,7 @@ function updateStats() {
     const avg = allData.length > 0 ? (totalRating / allData.length).toFixed(1) : "0.0";
     if (avgRatingEl) avgRatingEl.textContent = avg;
 
-    // グラフ描画
+    // グラフ描画を呼び出し
     drawGenreChart();
 }
 
@@ -41,19 +42,47 @@ function drawGenreChart() {
         counts[g] = (counts[g] || 0) + 1;
     });
 
-    if (genreChart) genreChart.destroy();
+    const labels = Object.keys(counts);
+    const values = Object.values(counts);
 
+    // 古いグラフを安全に破棄
+    if (genreChart !== null) {
+        genreChart.destroy();
+    }
+
+    // グラフ生成
     genreChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: Object.keys(counts),
+            labels: labels,
             datasets: [{
-                data: Object.values(counts),
+                data: values,
                 backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40']
             }]
         },
-        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        options: {
+            plugins: {
+                legend: { display: false } // 標準凡例を非表示
+            }
+        }
     });
+
+    // カスタム凡例の描画（HTML生成）
+    const legendContainer = document.getElementById('customLegend');
+    if (legendContainer) {
+        legendContainer.innerHTML = ''; 
+
+        labels.forEach((label, index) => {
+            const color = genreChart.data.datasets[0].backgroundColor[index];
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.innerHTML = `
+                <span class="legend-box" style="background:${color}"></span>
+                <span class="legend-text">${label}</span>
+            `;
+            legendContainer.appendChild(item);
+        });
+    }
 }
 
 // --- 2. データ読み込み＆表示処理 ---

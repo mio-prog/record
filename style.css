@@ -446,30 +446,68 @@ header h1 {
     font-size: 18px;
 }
 
-/*統計*/
+/* 統計タブ全体のレイアウト */
 .stats-summary {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 15px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(3, 1fr); /* 3つ並べる */
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
+/* 各数値カードのデザイン */
 .stat-card {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 15px;
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .stat-card h3 {
-    font-size: 14px;
+    font-size: 12px;
     color: #888;
-    margin-bottom: 10px;
+    margin: 0 0 5px 0;
 }
 
 .stat-card p {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: bold;
+    margin: 0;
     color: #333;
+}
+
+/* グラフエリア（ここで背景と影を指定） */
+.canvas-wrapper {
+    background: white;        /* 文字が読めるように背景を白に */
+    border-radius: 15px;      /* 角を丸く */
+    padding: 20px;            /* グラフと枠の間に余白 */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 影をつける */
+	max-width: 400px; /* ここでグラフ全体の大きさを制限 */
+    margin: 20px auto; /* 上下に余白をとり、中央寄せにする */	
+	text-align: center;
+}
+
+.custom-legend {
+    display: flex;          /* 横並びにするための flex */
+    flex-wrap: wrap;        /* 画面幅が狭いときは自動で折り返す */
+    justify-content: center; /* 項目全体を中央に寄せる */
+    gap: 10px ;              /* 項目同士の隙間を調整 */
+    margin-top: 20px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;    /* 文字が途中で改行されるのを防ぐ */
+}
+
+/* ■の四角形 */
+.legend-box {
+    width: 12px;
+    height: 12px;
+    margin-right: 6px;      /* 四角と文字の隙間 */
+    border-radius: 2px;
+}
+.legend-text {
+    line-height: 1; /* 文字が複数行になる場合の行間 */
 }
