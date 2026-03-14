@@ -461,7 +461,7 @@ header h1 {
 
 .year-selector h2 {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1rem;
     min-width: 100px;
     text-align: center;
 }
@@ -544,4 +544,85 @@ header h1 {
 }
 .legend-text {
     line-height: 1; /* 文字が複数行になる場合の行間 */
+}
+
+/*----タイムライン----*/
+.timeline-container {
+    position: relative;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px 0;
+}
+
+/* 中央の縦線 */
+.timeline-container::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    background-color: #e0e0e0;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    margin-left: -2px;
+}
+
+/* 各カードの共通設定 */
+.timeline-card {
+    padding: 20px;
+	margin-bottom: -200px;
+    position: relative;
+    width: 45%; /* 50%より少し小さくして線との間隔を作る */
+}
+
+/* 奇数番目（左側） */
+.timeline-card:nth-child(odd) {
+    left: 0;
+}
+
+/* 偶数番目（右側） */
+.timeline-card:nth-child(even) {
+    left: 55%;
+}
+
+/* 日付のドット */
+.timeline-card::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background-color: #a3c4f3; /* 統一感のある色 */
+    border-radius: 50%;
+    top: 25px;
+}
+
+.timeline-card:nth-child(odd)::before { right: -8px; }
+.timeline-card:nth-child(even)::before { left: -8px; }
+
+
+
+@media (max-width: 600px) {
+    /* 中央線を消して、左側に線を移動 */
+    .timeline-container::after {
+        left: 20px;       /* 線を左端へ */
+        margin-left: 0;
+    }
+
+    /* 各カードを1列に並べる */
+    .timeline-card {
+        width: 85% !important; /* カード幅を広げる */
+        margin-left: 40px !important; /* 左の線との隙間を作る */
+        margin-bottom: 20px !important; /* 重なりを解消して余白を作る */
+        left: 0 !important;
+    }
+
+    /* PC用のジグザグ配置を解除 */
+    .timeline-card:nth-child(even) {
+        align-self: flex-start;
+    }
+
+    /* 左側のドットの位置を修正 */
+    .timeline-card::before {
+        left: -25px !important; /* 左側の線の上にドットを乗せる */
+        right: auto !important;
+    }
 }

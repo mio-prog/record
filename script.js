@@ -9,7 +9,18 @@ let currentSort = {
 };
 let genreChart = null; // グラフを保持する変数
 let currentYear = "all"; 
+// ジャンルごとの固定色設定（中間トーンの明るめくすみカラー）
+const genreColors = {
+    "ビジネス": "#a3c4f3",        // 爽やかなブルー
+    "自然科学": "#90dbf4",        // 透明感のある水色
+    "小説": "#ffcfd2",           // 優しいピンク
+    "アニメ": "#cfbaf0",         // 落ち着いたラベンダー
+    "ヒューマンドラマ": "#f1c0e8", // 華やかなピンクパープル
+    "未分類": "#e2e2e2"          // 控えめなグレー
+};
 
+// 上記以外のジャンルが出てきた時用の予備色（同じトーンで揃えています）
+const extraColors = ['#b9fbc0', '#fbf8cc', '#fde4cf', '#ffcfd2', '#f1c0e8', '#cfbaf0', '#a3c4f3', '#90dbf4', '#8eecf5', '#98f5e1'];
 
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw3_O5HjDqZQ-3DbHn3WiiRmDWVRu8cwI2A4fIb2xUsLHEbRGWqHaXPolNmwcUWsYer/exec';
 
@@ -81,6 +92,11 @@ function drawGenreChart(dataForChart) {
     const labels = Object.keys(counts);
     const values = Object.values(counts);
 
+    // ラベルに合わせて色を固定する
+    const backgroundColors = labels.map((label, index) => {
+        return genreColors[label] || extraColors[index % extraColors.length];
+    });
+
     if (genreChart !== null) {
         genreChart.destroy();
     }
@@ -91,22 +107,33 @@ function drawGenreChart(dataForChart) {
             labels: labels,
             datasets: [{
                 data: values,
-                backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40']
+                backgroundColor: backgroundColors // 固定された色を使用
             }]
         },
         options: {
             plugins: {
-                legend: { display: false }
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return ` ${label}: ${value}件 (${percentage}%)`;
+                        }
+                    }
+                }
             }
         }
     });
 
-    // カスタム凡例の描画
+    // 凡例の描画（ここも自動的に固定された色が反映されます）
     const legendContainer = document.getElementById('customLegend');
     if (legendContainer) {
         legendContainer.innerHTML = ''; 
         labels.forEach((label, index) => {
-            const color = genreChart.data.datasets[0].backgroundColor[index];
+            const color = backgroundColors[index]; // 固定色
             const item = document.createElement('div');
             item.className = 'legend-item';
             item.innerHTML = `
@@ -272,19 +299,54 @@ function openModal(type, title) {
     document.getElementById('modal').classList.add('active');
 }
 
+//タイムライン
+function renderTimeline() {
+    const container = document.getElementById('timelineContainer');
+    const allData = [...booksData, ...moviesData];
+    
+    // 日付が新しい順に並び替え
+    allData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    container.innerHTML = allData.map(item => {
+    const type = item.type;
+    const coverPath = `img/${type === 'book' ? 'book' : 'movie'}/${item.coverUrl}`;
+    
+    return `
+        <div class="timeline-card" onclick="openModal('${type === 'book' ? 'books' : 'movies'}', '${item.title.replace(/'/g, "\\'")}')">
+            <div class="card-content" style="background:#fff; border-radius:12px; padding:15px; box-shadow:0 2px 5px rgba(0,0,0,0.1); cursor:pointer;">
+                <img src="${coverPath}" style="width:100%; aspect-ratio: 2/3; object-fit:cover; border-radius:4px; margin-bottom:10px;" onerror="this.src='img/no-image.png'">
+                <div style="text-align: center;">
+                    <small style="color:#888; display:block; margin-bottom:4px;">${formatJSTDate(item.date)}</small>
+                    <h4 style="margin:0; font-size:1rem; line-height:1.2;">${item.title}</h4>
+                </div>
+            </div>
+        </div>
+    `;
+	}).join('');
+}
+
 // --- 4. 初期化 ---
 document.addEventListener('DOMContentLoaded', () => {
     loadAppData();
+    
+    // タブ切り替え処理
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.onclick = () => {
             document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
             btn.classList.add('active');
             const targetTab = btn.dataset.tab;
             document.getElementById(`${targetTab}Tab`).classList.add('active');
-            if (targetTab !== 'stats') clearFilters(targetTab);
+            
+            // タイムラインタブが開かれたら描画する
+            if (targetTab === 'timeline') {
+                renderTimeline();
+            } else if (targetTab !== 'stats') {
+                clearFilters(targetTab);
+            }
         };
     });
     
+    // 以下、検索やモーダルなどの設定はそのまま
     ['Books', 'Movies'].forEach(type => {
         document.getElementById(`searchBox${type}`).oninput = () => updateDisplay(type.toLowerCase());
     });
@@ -305,3 +367,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
