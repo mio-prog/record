@@ -114,17 +114,23 @@ function drawGenreChart(dataForChart) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    titleColor: '#333',
+                    bodyColor: '#333',
+                    borderColor: '#ddd',
+                    borderWidth: 1,
                     callbacks: {
+                        // label を表示しないように変更
                         label: function(context) {
-                            const label = context.label || '';
                             const value = context.parsed;
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
                             const percentage = ((value / total) * 100).toFixed(1);
-                            return ` ${label}: ${value}件 (${percentage}%)`;
+                            return ` ${value}件 (${percentage}%)`;
                         }
                     }
                 }
-            }
+            },
+            cutout: '50%'
         }
     });
 
@@ -302,27 +308,48 @@ function openModal(type, title) {
 //タイムライン
 function renderTimeline() {
     const container = document.getElementById('timelineContainer');
-    const allData = [...booksData, ...moviesData];
-    
     // 日付が新しい順に並び替え
-    allData.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    container.innerHTML = allData.map(item => {
-    const type = item.type;
-    const coverPath = `img/${type === 'book' ? 'book' : 'movie'}/${item.coverUrl}`;
+    const allData = [...booksData, ...moviesData].sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    return `
-        <div class="timeline-card" onclick="openModal('${type === 'book' ? 'books' : 'movies'}', '${item.title.replace(/'/g, "\\'")}')">
-            <div class="card-content" style="background:#fff; border-radius:12px; padding:15px; box-shadow:0 2px 5px rgba(0,0,0,0.1); cursor:pointer;">
-                <img src="${coverPath}" style="width:100%; aspect-ratio: 2/3; object-fit:cover; border-radius:4px; margin-bottom:10px;" onerror="this.src='img/no-image.png'">
-                <div style="text-align: center;">
-                    <small style="color:#888; display:block; margin-bottom:4px;">${formatJSTDate(item.date)}</small>
-                    <h4 style="margin:0; font-size:1rem; line-height:1.2;">${item.title}</h4>
+    let lastMonth = null;
+    let html = '';
+
+    allData.forEach((item, index) => {
+        const itemDate = new Date(item.date);
+        const currentMonth = `${itemDate.getFullYear()}年${itemDate.getMonth() + 1}月`;
+
+        // 1. 月が変わったタイミングで「〇月」ラベルを挿入
+        if (currentMonth !== lastMonth) {
+			html += `<div class="timeline-month-wrapper">
+                     <div class="timeline-month-label">${currentMonth}</div>
+                     </div>`;
+			lastMonth = currentMonth;
+		}
+
+        // 2. 時間軸に応じた余白（マージン）の計算
+        let extraMargin = 20; 
+        if (index > 0) {
+            const prevDate = new Date(allData[index - 1].date);
+            const diffDays = (prevDate - itemDate) / (1000 * 60 * 60 * 24);
+            // 係数を8に設定して間隔を広げ、最大150pxまで
+            extraMargin = Math.min(20 + (diffDays * 8), 150);
+        }
+
+        // 3. カードの生成
+        const onClick = `openModal('${item.type === 'book' ? 'books' : 'movies'}', '${item.title.replace(/'/g, "\\'")}')`;
+        
+        html += `
+            <div class="timeline-card" onclick="${onClick}" style="margin-bottom: ${extraMargin}px;">
+                <div class="card-content">
+                    <small>${formatJSTDate(item.date)}</small>
+                    <h4>${item.title}</h4>
+                    <div class="star-rating">${generateStars(item.rating)}</div>
                 </div>
             </div>
-        </div>
-    `;
-	}).join('');
+        `;
+    });
+
+    container.innerHTML = html;
 }
 
 // --- 4. 初期化 ---
