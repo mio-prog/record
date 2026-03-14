@@ -8,36 +8,72 @@ let currentSort = {
     movies: { key: 'date', asc: false } 
 };
 let genreChart = null; // グラフを保持する変数
-
+let currentYear = "all"; 
+let genreChart = null;
 
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw3_O5HjDqZQ-3DbHn3WiiRmDWVRu8cwI2A4fIb2xUsLHEbRGWqHaXPolNmwcUWsYer/exec';
 
 // --- 1. 統計・グラフ描画関数 ---
+function changeYear(direction) {
+    const allData = [...booksData, ...moviesData];
+    // データ内にある年を重複なく取り出してソート（[2024, 2025, 2026]）
+    const availableYears = [...new Set(allData.map(item => new Date(item.date).getFullYear()))].sort();
+    
+    if (currentYear === "all") {
+        // 「すべて」から移動する場合
+        currentYear = direction > 0 ? availableYears[0] : availableYears[availableYears.length - 1];
+    } else {
+        let index = availableYears.indexOf(currentYear);
+        index += direction;
+        
+        if (index < 0 || index >= availableYears.length) {
+            currentYear = "all"; // 範囲外は「すべて」へ
+        } else {
+            currentYear = availableYears[index];
+        }
+    }
+    updateStats(); 
+}
+
 function updateStats() {
     const totalBooksEl = document.getElementById('totalBooks');
     const totalMoviesEl = document.getElementById('totalMovies');
     const avgRatingEl = document.getElementById('avgRating');
+    const yearDisplayEl = document.getElementById('currentYearDisplay');
+
+    // 表示データの絞り込み
+    const allDataRaw = [...booksData, ...moviesData];
+    const displayData = currentYear === "all" 
+        ? allDataRaw 
+        : allDataRaw.filter(item => new Date(item.date).getFullYear() === currentYear);
+
+    // 見出しの更新
+    if (yearDisplayEl) {
+        yearDisplayEl.textContent = currentYear === "all" ? "全期間" : `${currentYear}年`;
+    }
     
-    if (totalBooksEl) totalBooksEl.textContent = booksData.length;
-    if (totalMoviesEl) totalMoviesEl.textContent = moviesData.length;
+    // 数値の更新
+    const filteredBooks = displayData.filter(d => d.type === 'book');
+    const filteredMovies = displayData.filter(d => d.type === 'movie');
+
+    if (totalBooksEl) totalBooksEl.textContent = filteredBooks.length;
+    if (totalMoviesEl) totalMoviesEl.textContent = filteredMovies.length;
     
-    const allData = [...booksData, ...moviesData];
-    const totalRating = allData.reduce((sum, item) => sum + (parseFloat(item.rating) || 0), 0);
-    const avg = allData.length > 0 ? (totalRating / allData.length).toFixed(1) : "0.0";
+    const totalRating = displayData.reduce((sum, item) => sum + (parseFloat(item.rating) || 0), 0);
+    const avg = displayData.length > 0 ? (totalRating / displayData.length).toFixed(1) : "0.0";
     if (avgRatingEl) avgRatingEl.textContent = avg;
 
-    // グラフ描画を呼び出し
-    drawGenreChart();
+    // グラフ描画に関数を渡す
+    drawGenreChart(displayData);
 }
 
-function drawGenreChart() {
+function drawGenreChart(dataForChart) {
     const canvas = document.getElementById('genreChart');
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
-    const allData = [...booksData, ...moviesData];
     const counts = {};
-    allData.forEach(item => {
+    dataForChart.forEach(item => {
         const g = item.genre || "未分類";
         counts[g] = (counts[g] || 0) + 1;
     });
@@ -45,12 +81,10 @@ function drawGenreChart() {
     const labels = Object.keys(counts);
     const values = Object.values(counts);
 
-    // 古いグラフを安全に破棄
     if (genreChart !== null) {
         genreChart.destroy();
     }
 
-    // グラフ生成
     genreChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -62,16 +96,15 @@ function drawGenreChart() {
         },
         options: {
             plugins: {
-                legend: { display: false } // 標準凡例を非表示
+                legend: { display: false }
             }
         }
     });
 
-    // カスタム凡例の描画（HTML生成）
+    // カスタム凡例の描画
     const legendContainer = document.getElementById('customLegend');
     if (legendContainer) {
         legendContainer.innerHTML = ''; 
-
         labels.forEach((label, index) => {
             const color = genreChart.data.datasets[0].backgroundColor[index];
             const item = document.createElement('div');
