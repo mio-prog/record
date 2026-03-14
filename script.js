@@ -9,7 +9,7 @@ let currentSort = {
 };
 let genreChart = null; // グラフを保持する変数
 let currentYear = "all"; 
-let genreChart = null;
+
 
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw3_O5HjDqZQ-3DbHn3WiiRmDWVRu8cwI2A4fIb2xUsLHEbRGWqHaXPolNmwcUWsYer/exec';
 
