@@ -308,7 +308,6 @@ function openModal(type, title) {
 //タイムライン
 function renderTimeline() {
     const container = document.getElementById('timelineContainer');
-    // 日付が新しい順に並び替え
     const allData = [...booksData, ...moviesData].sort((a, b) => new Date(b.date) - new Date(a.date));
     
     let lastMonth = null;
@@ -317,31 +316,34 @@ function renderTimeline() {
     allData.forEach((item, index) => {
         const itemDate = new Date(item.date);
         const currentMonth = `${itemDate.getFullYear()}年${itemDate.getMonth() + 1}月`;
+        const type = item.type; // type も取得
 
-        // 1. 月が変わったタイミングで「〇月」ラベルを挿入
+        // 月が変わったら「〇月」ラベルを挿入
         if (currentMonth !== lastMonth) {
-			html += `<div class="timeline-month-wrapper">
-                     <div class="timeline-month-label">${currentMonth}</div>
+            html += `<div class="timeline-month-wrapper">
+                        <div class="timeline-month-label">${currentMonth}</div>
                      </div>`;
-			lastMonth = currentMonth;
-		}
+            lastMonth = currentMonth;
+        }
 
-        // 2. 時間軸に応じた余白（マージン）の計算
+        // 時間軸に応じた余白（マージン）の計算
         let extraMargin = 20; 
         if (index > 0) {
             const prevDate = new Date(allData[index - 1].date);
             const diffDays = (prevDate - itemDate) / (1000 * 60 * 60 * 24);
-            // 係数を8に設定して間隔を広げ、最大150pxまで
             extraMargin = Math.min(20 + (diffDays * 8), 150);
         }
 
-        // 3. カードの生成
-        const onClick = `openModal('${item.type === 'book' ? 'books' : 'movies'}', '${item.title.replace(/'/g, "\\'")}')`;
-        
+        const onClick = `openModal('${type === 'book' ? 'books' : 'movies'}', '${item.title.replace(/'/g, "\\'")}')`;
+        const coverPath = `img/${type === 'book' ? 'book' : 'movie'}/${item.coverUrl}`; // カバーパスもここで取得
+
         html += `
             <div class="timeline-card" onclick="${onClick}" style="margin-bottom: ${extraMargin}px;">
                 <div class="card-content">
-                    <small>${formatJSTDate(item.date)}</small>
+                    <div class="card-header">
+                        <small>${formatJSTDate(item.date)}</small>
+                        <img src="${coverPath}" class="card-thumbnail" onerror="this.src='img/no-image.png'" alt="${item.title}のサムネイル">
+                    </div>
                     <h4>${item.title}</h4>
                     <div class="star-rating">${generateStars(item.rating)}</div>
                 </div>
