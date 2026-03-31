@@ -1,5 +1,5 @@
 /**
- * 読書・映画記録 完全版（グラフ描画対応）
+ * 読書・映画記録 完全版（グラフ描画・連動対応）
  */
 let booksData = [];
 let moviesData = [];
@@ -7,43 +7,42 @@ let currentSort = {
     books: { key: 'date', asc: false }, 
     movies: { key: 'date', asc: false } 
 };
-let genreChart = null; // グラフを保持する変数
+let genreChart = null; 
+let myYearlyChart = null; // 棒グラフ用
 let currentYear = "all"; 
-// ジャンルごとの固定色設定（中間トーンの明るめくすみカラー）
-const genreColors = {
-    "ビジネス": "#a3c4f3",        // 爽やかなブルー
-    "自然科学": "#90dbf4",        // 透明感のある水色
-    "小説": "#ffcfd2",           // 優しいピンク
-    "アニメ": "#cfbaf0",         // 落ち着いたラベンダー
-    "ヒューマンドラマ": "#f1c0e8", // 華やかなピンクパープル
-    "未分類": "#e2e2e2"          // 控えめなグレー
-};
 
-// 上記以外のジャンルが出てきた時用の予備色（同じトーンで揃えています）
+const genreColors = {
+    "ビジネス": "#a3c4f3",
+    "自然科学": "#90dbf4",
+    "小説": "#ffcfd2",
+    "アニメ": "#cfbaf0",
+    "ヒューマンドラマ": "#f1c0e8",
+    "未分類": "#e2e2e2"
+};
 const extraColors = ['#b9fbc0', '#fbf8cc', '#fde4cf', '#ffcfd2', '#f1c0e8', '#cfbaf0', '#a3c4f3', '#90dbf4', '#8eecf5', '#98f5e1'];
 
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw3_O5HjDqZQ-3DbHn3WiiRmDWVRu8cwI2A4fIb2xUsLHEbRGWqHaXPolNmwcUWsYer/exec';
 
 // --- 1. 統計・グラフ描画関数 ---
+
 function changeYear(direction) {
     const allData = [...booksData, ...moviesData];
-    // データ内にある年を重複なく取り出してソート（[2024, 2025, 2026]）
     const availableYears = [...new Set(allData.map(item => new Date(item.date).getFullYear()))].sort();
     
     if (currentYear === "all") {
-        // 「すべて」から移動する場合
         currentYear = direction > 0 ? availableYears[0] : availableYears[availableYears.length - 1];
     } else {
         let index = availableYears.indexOf(currentYear);
         index += direction;
         
         if (index < 0 || index >= availableYears.length) {
-            currentYear = "all"; // 範囲外は「すべて」へ
+            currentYear = "all";
         } else {
             currentYear = availableYears[index];
         }
     }
     updateStats(); 
+    renderStats(); // 年変更に合わせて棒グラフも更新
 }
 
 function updateStats() {
@@ -52,18 +51,15 @@ function updateStats() {
     const avgRatingEl = document.getElementById('avgRating');
     const yearDisplayEl = document.getElementById('currentYearDisplay');
 
-    // 表示データの絞り込み
     const allDataRaw = [...booksData, ...moviesData];
     const displayData = currentYear === "all" 
         ? allDataRaw 
         : allDataRaw.filter(item => new Date(item.date).getFullYear() === currentYear);
 
-    // 見出しの更新
     if (yearDisplayEl) {
         yearDisplayEl.textContent = currentYear === "all" ? "全期間" : `${currentYear}年`;
     }
     
-    // 数値の更新
     const filteredBooks = displayData.filter(d => d.type === 'book');
     const filteredMovies = displayData.filter(d => d.type === 'movie');
 
@@ -74,7 +70,6 @@ function updateStats() {
     const avg = displayData.length > 0 ? (totalRating / displayData.length).toFixed(1) : "0.0";
     if (avgRatingEl) avgRatingEl.textContent = avg;
 
-    // グラフ描画に関数を渡す
     drawGenreChart(displayData);
 }
 
@@ -91,15 +86,9 @@ function drawGenreChart(dataForChart) {
 
     const labels = Object.keys(counts);
     const values = Object.values(counts);
+    const backgroundColors = labels.map((label, index) => genreColors[label] || extraColors[index % extraColors.length]);
 
-    // ラベルに合わせて色を固定する
-    const backgroundColors = labels.map((label, index) => {
-        return genreColors[label] || extraColors[index % extraColors.length];
-    });
-
-    if (genreChart !== null) {
-        genreChart.destroy();
-    }
+    if (genreChart !== null) genreChart.destroy();
 
     genreChart = new Chart(ctx, {
         type: 'doughnut',
@@ -107,7 +96,7 @@ function drawGenreChart(dataForChart) {
             labels: labels,
             datasets: [{
                 data: values,
-                backgroundColor: backgroundColors // 固定された色を使用
+                backgroundColor: backgroundColors
             }]
         },
         options: {
@@ -120,7 +109,6 @@ function drawGenreChart(dataForChart) {
                     borderColor: '#ddd',
                     borderWidth: 1,
                     callbacks: {
-                        // label を表示しないように変更
                         label: function(context) {
                             const value = context.parsed;
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -134,80 +122,49 @@ function drawGenreChart(dataForChart) {
         }
     });
 
-    // 凡例の描画（ここも自動的に固定された色が反映されます）
     const legendContainer = document.getElementById('customLegend');
     if (legendContainer) {
         legendContainer.innerHTML = ''; 
         labels.forEach((label, index) => {
-            const color = backgroundColors[index]; // 固定色
+            const color = backgroundColors[index];
             const item = document.createElement('div');
             item.className = 'legend-item';
-            item.innerHTML = `
-                <span class="legend-box" style="background:${color}"></span>
-                <span class="legend-text">${label}</span>
-            `;
+            item.innerHTML = `<span class="legend-box" style="background:${color}"></span><span class="legend-text">${label}</span>`;
             legendContainer.appendChild(item);
         });
     }
 }
 
-let myYearlyChart = null;
-let myDailyChart = null;
-
-//棒グラフ
+// 棒グラフの描画
 function renderStats() {
     const yearlyCtx = document.getElementById('yearlyChart');
-    const dailyCtx = document.getElementById('dailyChart');
-    if (!yearlyCtx || !dailyCtx) return;
+    if (!yearlyCtx) return;
 
     if (myYearlyChart) myYearlyChart.destroy();
-    if (myDailyChart) myDailyChart.destroy();
 
-    // currentYearを数値に変換（"all" の場合は NaN になる）
     const selectedYear = parseInt(currentYear);
 
+    // 「すべて」の時は棒グラフを非表示にする
     if (currentYear === "all" || isNaN(selectedYear)) {
         yearlyCtx.parentElement.style.display = 'none';
-        dailyCtx.parentElement.style.display = 'none';
         return; 
     } else {
         yearlyCtx.parentElement.style.display = 'block';
-        dailyCtx.parentElement.style.display = 'block';
     }
 
     const monthlyLabels = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
     const monthlyBookData = new Array(12).fill(0);
     const monthlyMovieData = new Array(12).fill(0);
 
-    const dayLabels = ["日", "月", "火", "水", "木", "金", "土"];
-    const dayBookData = new Array(7).fill(0);
-    const dayMovieData = new Array(7).fill(0); // ここ修正: 以前 dailyMovieData になっていました
-
     const allData = [...booksData, ...moviesData];
     allData.forEach(item => {
         const d = new Date(item.date);
-        // 数値同士で比較
         if (d.getFullYear() === selectedYear) {
-            // 月別
             const monthIdx = d.getMonth();
             if (item.type === 'book') monthlyBookData[monthIdx]++;
             else monthlyMovieData[monthIdx]++;
-
-            // 曜日別
-            const dayIdx = d.getDay();
-            if (item.type === 'book') dayBookData[dayIdx]++;
-            else dayMovieData[dayIdx]++;
         }
     });
-
-    const commonOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1 } }
-        },
-        plugins: { legend: { position: 'bottom' } }
-    };
 
     myYearlyChart = new Chart(yearlyCtx, {
         type: 'bar',
@@ -219,27 +176,42 @@ function renderStats() {
             ]
         },
         options: {
-            ...commonOptions,
-            plugins: { ...commonOptions.plugins, title: { display: true, text: `${selectedYear}年 月別記録` } }
-        }
-    });
-
-    myDailyChart = new Chart(dailyCtx, {
-        type: 'bar',
-        data: {
-            labels: dayLabels,
-            datasets: [
-                { label: '本 📖', data: dayBookData, backgroundColor: '#a3c4f3', borderRadius: 4 },
-                { label: '映画 🎬', data: dayMovieData, backgroundColor: '#ffd1dc', borderRadius: 4 }
-            ]
-        },
-        options: {
-            ...commonOptions,
-            plugins: { ...commonOptions.plugins, title: { display: true, text: `${selectedYear}年 曜日別の傾向` } }
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            },
+            plugins: {
+                legend: { position: 'bottom' },
+                title: { display: true, text: `${selectedYear}年 月別記録` }
+            },
+            onClick: (event, elements) => {
+                if (elements.length > 0) {
+                    const monthIdx = elements[0].index;
+                    showMonthlyDetail(selectedYear, monthIdx);
+                }
+            }
         }
     });
 }
 
+function showMonthlyDetail(year, monthIdx) {
+    const monthName = monthIdx + 1 + "月";
+    const allData = [...booksData, ...moviesData];
+    const targets = allData.filter(item => {
+        const d = new Date(item.date);
+        return d.getFullYear() === year && d.getMonth() === monthIdx;
+    }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    if (targets.length === 0) return;
+
+    const listText = targets.map(item => {
+        const icon = item.type === 'book' ? '📖' : '🎬';
+        return `${icon} ${item.title}`;
+    }).join('\n');
+
+    alert(`--- ${year}年 ${monthName} の記録 ---\n\n${listText}`);
+}
 
 // --- 2. データ読み込み＆表示処理 ---
 async function loadAppData() {
@@ -271,7 +243,7 @@ function renderData(allData) {
     updateDisplay('movies');
     setupFilters();
     updateStats();
-	renderStats();
+    renderStats();
 }
 
 // --- 3. その他の共通関数 ---
@@ -332,8 +304,10 @@ function setupFilters() {
 
 function clearFilters(type) {
     const typeUpper = type.charAt(0).toUpperCase() + type.slice(1);
-    document.getElementById(`searchBox${typeUpper}`).value = '';
-    document.getElementById(`genreFilter${typeUpper}`).value = '';
+    const sBox = document.getElementById(`searchBox${typeUpper}`);
+    const gFilter = document.getElementById(`genreFilter${typeUpper}`);
+    if(sBox) sBox.value = '';
+    if(gFilter) gFilter.value = '';
     updateDisplay(type);
 }
 
@@ -396,7 +370,6 @@ function openModal(type, title) {
     document.getElementById('modal').classList.add('active');
 }
 
-//タイムライン
 function renderTimeline() {
     const container = document.getElementById('timelineContainer');
     const allData = [...booksData, ...moviesData].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -407,17 +380,13 @@ function renderTimeline() {
     allData.forEach((item, index) => {
         const itemDate = new Date(item.date);
         const currentMonth = `${itemDate.getFullYear()}年${itemDate.getMonth() + 1}月`;
-        const type = item.type; // type も取得
+        const type = item.type;
 
-        // 月が変わったら「〇月」ラベルを挿入
         if (currentMonth !== lastMonth) {
-            html += `<div class="timeline-month-wrapper">
-                        <div class="timeline-month-label">${currentMonth}</div>
-                     </div>`;
+            html += `<div class="timeline-month-wrapper"><div class="timeline-month-label">${currentMonth}</div></div>`;
             lastMonth = currentMonth;
         }
 
-        // 時間軸に応じた余白（マージン）の計算
         let extraMargin = 20; 
         if (index > 0) {
             const prevDate = new Date(allData[index - 1].date);
@@ -426,7 +395,7 @@ function renderTimeline() {
         }
 
         const onClick = `openModal('${type === 'book' ? 'books' : 'movies'}', '${item.title.replace(/'/g, "\\'")}')`;
-        const coverPath = `img/${type === 'book' ? 'book' : 'movie'}/${item.coverUrl}`; // カバーパスもここで取得
+        const coverPath = `img/${type === 'book' ? 'book' : 'movie'}/${item.coverUrl}`;
 
         html += `
             <div class="timeline-card" onclick="${onClick}" style="margin-bottom: ${extraMargin}px;">
@@ -441,7 +410,6 @@ function renderTimeline() {
             </div>
         `;
     });
-
     container.innerHTML = html;
 }
 
@@ -449,7 +417,6 @@ function renderTimeline() {
 document.addEventListener('DOMContentLoaded', () => {
     loadAppData();
     
-    // タブ切り替え処理
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.onclick = () => {
             document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
@@ -457,21 +424,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetTab = btn.dataset.tab;
             document.getElementById(`${targetTab}Tab`).classList.add('active');
             
-            // タイムラインタブが開かれたら描画する
             if (targetTab === 'timeline') {
-				renderTimeline();}
-			else if (targetTab === 'stats') {
-			// 統計タブが開かれたら、数字の更新とすべてのグラフを描画する
-				updateStats(); 
-				renderStats(); }
-			else {
-				clearFilters(targetTab);}
+                renderTimeline();
+            } else if (targetTab === 'stats') {
+                updateStats(); 
+                renderStats(); 
+            } else {
+                clearFilters(targetTab);
+            }
         };
     });
     
-    // 以下、検索やモーダルなどの設定はそのまま
     ['Books', 'Movies'].forEach(type => {
-        document.getElementById(`searchBox${type}`).oninput = () => updateDisplay(type.toLowerCase());
+        const el = document.getElementById(`searchBox${type}`);
+        if(el) el.oninput = () => updateDisplay(type.toLowerCase());
     });
     
     document.getElementById('modalClose').onclick = () => document.getElementById('modal').classList.remove('active');
@@ -490,4 +456,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
-
