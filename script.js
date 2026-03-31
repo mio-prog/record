@@ -144,7 +144,7 @@ function renderStats() {
 
     const selectedYear = parseInt(currentYear);
 
-    // 「すべて」の時は棒グラフを非表示にする
+    // 「すべて」の時は棒グラフを非表示
     if (currentYear === "all" || isNaN(selectedYear)) {
         yearlyCtx.parentElement.style.display = 'none';
         return; 
@@ -179,11 +179,19 @@ function renderStats() {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                y: { 
+                    beginAtZero: true, 
+                    min: 0,
+                    max: 5, // 最大値を5に固定
+                    ticks: { stepSize: 1 } 
+                }
             },
             plugins: {
                 legend: { position: 'bottom' },
-                title: { display: true, text: `${selectedYear}年 月別記録` }
+                title: { 
+                    display: true, 
+                    text: `${selectedYear}年 月別記録` 
+                }
             },
             onClick: (event, elements) => {
                 if (elements.length > 0) {
