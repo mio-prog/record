@@ -135,19 +135,29 @@
 	
 	<div class="stats-container">
         <canvas id="yearlyChart"></canvas>
+    </div>		
     </div>
-    <div class="stats-container" style="margin-top: 40px;">
-        <canvas id="dailyChart"></canvas>
-    </div>	
-		
+	
+	<!-- 月間リスト表示用のミニ・モーダル -->
+	<div id="monthlyModal" class="modal-overlay">
+    <div class="modal-content mini-modal">
+        <div class="modal-header">
+            <h3 id="monthlyModalTitle">2024年3月の記録</h3>
+            <span class="close-btn" id="monthlyModalClose">&times;</span>
+        </div>
+        <div id="monthlyListContainer" class="mini-card-grid">
+            <!-- ここに作品が並びます -->
+        </div>
     </div>
+	</div>
 	
 	<!--タイムライン-->
 	<div id="timelineTab" class="tab-content">
     <div class="timeline-container" id="timelineContainer"></div>
 	</div>
 
-    <script src="script.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+	
 </body>
 </html>
