@@ -203,7 +203,10 @@ function renderStats() {
     });
 }
 
-// 棒グラフクリック時の詳細表示（アラートからモーダルへ変更）
+/**
+ * 棒グラフクリック時の詳細表示
+ * ミニモーダルを閉じ、詳細モーダルを開く連動付き
+ */
 function showMonthlyDetail(year, monthIdx) {
     const monthName = monthIdx + 1 + "月";
     const allData = [...booksData, ...moviesData];
@@ -215,32 +218,50 @@ function showMonthlyDetail(year, monthIdx) {
     if (targets.length === 0) return;
 
     // モーダルのタイトル更新
-    document.getElementById('monthlyModalTitle').textContent = `${year}年 ${monthName} の記録`;
+    const titleEl = document.getElementById('monthlyModalTitle');
+    if (titleEl) titleEl.textContent = `${year}年 ${monthName} の記録`;
     
     // リストの生成
     const container = document.getElementById('monthlyListContainer');
+    if (!container) return;
+
     container.innerHTML = targets.map(item => {
         const typePath = item.type === 'book' ? 'book' : 'movie';
         const coverPath = `img/${typePath}/${item.coverUrl}`;
-        // クリックで詳細モーダルを開く連動も維持
-        const onClick = `openModal('${item.type === 'book' ? 'books' : 'movies'}', '${item.title.replace(/'/g, "\\'")}')`;
+        const dataType = item.type === 'book' ? 'books' : 'movies';
         
+        // エスケープ処理（タイトルに ' が含まれる場合への対策）
+        const escapedTitle = item.title.replace(/'/g, "\\'");
+
+        /**
+         * 【ポイント】
+         * onclickの中で、先に「monthlyModal」から active クラスを除去してから
+         * 詳細モーダルを開く openModal を実行するようにしています。
+         */
         return `
-            <div class="mini-item-card" onclick="${onClick}">
+            <div class="mini-item-card" 
+                 onclick="document.getElementById('monthlyModal').classList.remove('active'); openModal('${dataType}', '${escapedTitle}')">
                 <img src="${coverPath}" class="mini-item-thumb" onerror="this.src='img/no-image.png'">
                 <div class="mini-item-title">${item.title}</div>
             </div>
         `;
     }).join('');
 
-    // モーダルを表示
-    document.getElementById('monthlyModal').classList.add('active');
+    // ミニモーダルを表示
+    const monthlyModal = document.getElementById('monthlyModal');
+    if (monthlyModal) monthlyModal.classList.add('active');
 }
 
-// DOMContentLoaded内に閉じる処理を追加
-document.getElementById('monthlyModalClose').onclick = () => {
-    document.getElementById('monthlyModal').classList.remove('active');
-};
+/**
+ * 初期化処理 (DOMContentLoaded内に追加)
+ */
+// ※すでに既存のコードにある場合は、ここだけ追加・確認してください
+const monthlyModalClose = document.getElementById('monthlyModalClose');
+if (monthlyModalClose) {
+    monthlyModalClose.onclick = () => {
+        document.getElementById('monthlyModal').classList.remove('active');
+    };
+}
 
 // --- 2. データ読み込み＆表示処理 ---
 async function loadAppData() {

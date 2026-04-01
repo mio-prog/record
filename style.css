@@ -567,6 +567,16 @@ header h1 {
     display: none; 
 }
 /* --- ミニモーダル専用スタイル --- */
+/* ミニモーダルの重なり順を通常モーダルと同等に設定 */
+#monthlyModal {
+    z-index: 1000;
+}
+
+/* 詳細モーダルの重なり順（念のため少し高く設定） */
+#modal {
+    z-index: 1100;
+}
+
 .mini-modal {
     max-width: 450px !important; /* 通常モーダルよりスリムに */
     max-height: 80vh;
