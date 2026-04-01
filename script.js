@@ -458,26 +458,32 @@ function renderTimeline() {
 }
 
 function renderWishlist() {
-	const validData = wishlistData.filter(item => item.title && item.title.trim() !== "");
     const container = document.getElementById('wishlistGrid');
     if (!container) return;
 
-    if (wishlistData.length === 0) {
+    // 空行対策：タイトルがあるデータのみ抽出
+    const validData = wishlistData.filter(item => item.title && item.title.trim() !== "");
+
+    if (validData.length === 0) {
         container.innerHTML = '<p style="color:white; text-align:center; grid-column:1/-1;">リストは空です。スプレッドシートに追加してみましょう！</p>';
         return;
     }
 
-    container.innerHTML = wishlistData.map(item => {
+    container.innerHTML = validData.map(item => {
         const icon = item.type === 'book' ? '📖' : '🎬';
-        const typeColor = item.type === 'book' ? '#a3c4f3' : '#ffd1dc';
+        const typeLabel = item.type === 'book' ? 'Book' : 'Movie';
+        
+        // --- 色の振り分け ---
+        // 本は「薄い黄色」、映画は「薄いピンク」
+        const stickyColor = item.type === 'book' ? '#fff9c4' : '#ffd1dc';
         
         return `
-            <div class="wish-card" style="border-left: 8px solid ${typeColor}">
-                <div class="wish-type-badge">${icon} ${item.type === 'book' ? 'Book' : 'Movie'}</div>
+            <div class="wish-card" style="background: ${stickyColor};">
+                <div class="wish-type-badge">${icon} ${typeLabel}</div>
                 <h4>${item.title}</h4>
                 <div class="creator">${item.creator || ''}</div>
                 <div class="memo">${(item.memo || '').replace(/\n/g, '<br>')}</div>
-                ${item.link ? `<a href="${item.link}" target="_blank" class="wish-link">詳細・リンク ↗</a>` : ''}
+                ${item.link ? `<a href="${item.link}" target="_blank" class="wish-link">🔗 リンク</a>` : ''}
             </div>
         `;
     }).join('');
