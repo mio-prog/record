@@ -361,21 +361,41 @@ function clearFilters(type) {
     updateDisplay(type);
 }
 
-function filterByTag(type, tagName) {
-    const typeUpper = type.charAt(0).toUpperCase() + type.slice(1);
-    document.getElementById(`searchBox${typeUpper}`).value = tagName;
-    document.getElementById('modal').classList.remove('active');
-    updateDisplay(type);
-}
-
+// 著者名でフィルタリングしてタブを切り替える
 function filterByAuthor(type, authorName) {
-    const typeUpper = type.charAt(0).toUpperCase() + type.slice(1);
+    // book -> books, movie -> movies に変換
+    const targetTab = type.endsWith('s') ? type : type + 's';
+    
+    // 1. タブを切り替える
+    const tabBtn = document.querySelector(`.tab-btn[data-tab="${targetTab}"]`);
+    if (tabBtn) tabBtn.click();
+
+    const typeUpper = targetTab.charAt(0).toUpperCase() + targetTab.slice(1);
     const searchBox = document.getElementById(`searchBox${typeUpper}`);
     if (searchBox) {
         searchBox.value = authorName;
+        // 2. モーダルを閉じる
         document.getElementById('modal').classList.remove('active');
-        updateDisplay(type);
+        // 3. 表示を更新
+        updateDisplay(targetTab);
     }
+}
+
+// タグでフィルタリング
+function filterByTag(type, tagName) {
+    const targetTab = type.endsWith('s') ? type : type + 's';
+    
+    const tabBtn = document.querySelector(`.tab-btn[data-tab="${targetTab}"]`);
+    if (tabBtn) tabBtn.click();
+
+    const typeUpper = targetTab.charAt(0).toUpperCase() + targetTab.slice(1);
+    const sBox = document.getElementById(`searchBox${typeUpper}`);
+    if(sBox) {
+        sBox.value = tagName;
+        document.getElementById('modal').classList.remove('active');
+        updateDisplay(targetTab);
+    }
+}
 }
 
 function generateStars(rating) {
