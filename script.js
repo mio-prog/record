@@ -157,7 +157,7 @@ function renderStats() {
         if (d.getFullYear() === selectedYear) {
             const monthIdx = d.getMonth();
             if (item.type === 'book') monthlyBookData[monthIdx]++;
-            else if (item.type === 'movie') monthlyMovieData[monthIdx]++;
+            else if (item.type === 'movie') monthlyMovieData[monthIdx]++; // 明示的に判定
         }
     });
 
@@ -174,7 +174,12 @@ function renderStats() {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, min: 0, ticks: { stepSize: 1 } }
+                y: { 
+                    beginAtZero: true, 
+                    min: 0, 
+                    max: 5,           // 最大値を5に固定
+                    ticks: { stepSize: 1 } // 1刻み
+                }
             },
             plugins: {
                 legend: { position: 'bottom' },
@@ -213,7 +218,14 @@ function showMonthlyDetail(year, monthIdx) {
         const escapedTitle = item.title.replace(/'/g, "\\'");
 
         return `
-            <div class="mini-item-card" onclick="document.getElementById('monthlyModal').classList.remove('active'); openModal('${dataType}', '${escapedTitle}')">
+            <div class="mini-item-card" 
+                 onclick="
+                    document.getElementById('monthlyModal').classList.remove('active'); 
+                    /* 詳細を開く前にタブを切り替えておく */
+                    const tabBtn = document.querySelector('.tab-btn[data-tab=\\'${dataType}\\']');
+                    if(tabBtn) tabBtn.click();
+                    openModal('${dataType}', '${escapedTitle}');
+                 ">
                 <img src="${coverPath}" class="mini-item-thumb" onerror="this.src='img/no-image.png'">
                 <div class="mini-item-title">${item.title}</div>
             </div>
@@ -360,6 +372,7 @@ function generateStars(rating) {
 function formatJSTDate(dateString) {
     if (!dateString) return "";
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString; // 変換できない場合はそのまま返す
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
