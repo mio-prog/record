@@ -795,15 +795,20 @@ header h1 {
     }
 }
 
-/* Wishlist全体のグリッド */
-.wish-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 20px 0;
-}
 
 /* --- Wishlist 完全付箋風デザイン --- */
+/* Wishlistタブの見出しエリアの背景を透明にする */
+#wishlistTab .controls {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    padding: 10px 0; /* 余白だけ少し整える */
+}
+
+/* タイトルの文字色を微調整（必要であれば） */
+#wishlistTab h2 {
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* 背景に埋もれないように */
+}
 
 /* Wishlist全体のグリッド（ペタペタ貼るボードのようなイメージ） */
 .wish-grid {
@@ -855,6 +860,25 @@ header h1 {
     border-bottom: 1px dashed rgba(0,0,0,0.2); /* 下線を点線に */
     padding-bottom: 3px;
     align-self: flex-start;
+}
+
+/* 付箋の上にテープを貼る */
+.wish-card::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 25px;
+    background: rgba(255, 255, 255, 0.4); /* 半透明の白いテープ */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    z-index: 1;
+}
+
+/* 本と映画でテープの色を少し変えてもオシャレです */
+.wish-card[style*="#ffd1dc"]::before {
+    background: rgba(255, 255, 255, 0.5); /* 映画付箋用 */
 }
 
 .wish-card h4 {

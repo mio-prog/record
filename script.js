@@ -458,6 +458,7 @@ function renderTimeline() {
 }
 
 function renderWishlist() {
+	const validData = wishlistData.filter(item => item.title && item.title.trim() !== "");
     const container = document.getElementById('wishlistGrid');
     if (!container) return;
 
