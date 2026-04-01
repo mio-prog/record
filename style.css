@@ -803,79 +803,100 @@ header h1 {
     padding: 20px 0;
 }
 
-/* ウィッシュリスト用カード */
+/* --- Wishlist 完全付箋風デザイン --- */
+
+/* Wishlist全体のグリッド（ペタペタ貼るボードのようなイメージ） */
+.wish-grid {
+    display: grid;
+    /* スマホでは1列、広くなったら自動で並べる */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px; /* 付箋同士の間隔を少し広めに */
+    padding: 30px 0;
+}
+
+/* 付箋（カード）本体 */
 .wish-card {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 15px;
+    /* 既読カードとは違う、柔らかい黄色をベースに（JSで上書き） */
+    background: #fff9c4;
+    border-radius: 2px; /* 角をほとんど丸めない */
     padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    position: relative;
+    /* 柔らかい、少し浮いたような影 */
+    box-shadow: 2px 4px 8px rgba(0,0,0,0.1);
+    
+    /* 付箋らしい傾き（遊び心）を少し入れる */
+    transform: rotate(-1deg);
+    
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    position: relative;
+    cursor: pointer;
 }
 
+/* 偶数番目の付箋は逆に傾ける */
+.wish-card:nth-child(even) {
+    transform: rotate(1.5deg);
+}
+
+/* ホバー時に少し浮いて真っ直ぐになる（押し感） */
 .wish-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transform: translateY(-5px) rotate(0deg);
+    box-shadow: 5px 10px 20px rgba(0,0,0,0.15);
+    z-index: 10; /* 他の付箋より上に来るように */
 }
 
-/* カテゴリバッジ */
+/* 種別バッジ（付箋に馴染むようにシンプルに） */
 .wish-type-badge {
-    display: inline-block;
-    align-self: flex-start;
-    padding: 4px 10px;
-    border-radius: 20px;
     font-size: 0.75rem;
     font-weight: bold;
-    background: #f0f0f0;
-    color: #555;
+    color: rgba(0,0,0,0.5); /* 文字色を薄く */
     margin-bottom: 5px;
+    border-bottom: 1px dashed rgba(0,0,0,0.2); /* 下線を点線に */
+    padding-bottom: 3px;
+    align-self: flex-start;
 }
 
 .wish-card h4 {
     color: #333;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     margin: 0;
     line-height: 1.4;
+    font-weight: bold;
 }
 
 .wish-card .creator {
     color: #666;
-    font-size: 0.9rem;
-    font-style: italic;
+    font-size: 0.85rem;
+    font-style: italic; /* 少し斜体に */
 }
 
-/* メモ部分を付箋っぽく */
+/* メモ部分（カード自体が付箋なので、背景色は不要に） */
 .wish-card .memo {
     margin-top: 10px;
-    padding: 12px;
-    background: #fff9c4; /* 優しい黄色 */
-    border-radius: 8px;
     font-size: 0.88rem;
     color: #444;
     line-height: 1.6;
-    border-left: 4px solid #ffeb3b;
+    /* 鉛筆で書いたような雰囲気に（お好みで） */
+    font-family: "Hiragino Maru Gothic ProN", "YouYuan", sans-serif;
 }
 
-/* 外部リンク */
+/* 外部リンク（少し手書き風に） */
 .wish-link {
     margin-top: auto;
     text-align: right;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #764ba2;
-    text-decoration: none;
-    font-weight: bold;
+    text-decoration: underline; /* 常に下線 */
 }
 
-.wish-link:hover {
-    text-decoration: underline;
-}
-
-/* スマホ対応の微調整 */
+/* 【重要】スマホ対応（傾きをなくす） */
 @media (max-width: 600px) {
     .wish-grid {
-        grid-template-columns: 1fr; /* スマホでは1列 */
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    .wish-card, .wish-card:nth-child(even) {
+        transform: rotate(0deg); /* スマホでは真っ直ぐ */
     }
 }
