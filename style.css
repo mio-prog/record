@@ -797,14 +797,6 @@ header h1 {
 
 
 /* --- Wishlist 完全付箋風デザイン --- */
-/* Wishlistタブの見出しエリアの背景を透明にする */
-#wishlistTab .controls {
-    background: transparent;
-    box-shadow: none;
-    border: none;
-    padding: 10px 0; /* 余白だけ少し整える */
-}
-
 /* タイトルの文字色を微調整（必要であれば） */
 #wishlistTab h2 {
     text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* 背景に埋もれないように */
@@ -823,10 +815,11 @@ header h1 {
 .wish-card {
     /* 既読カードとは違う、柔らかい黄色をベースに（JSで上書き） */
     background: #fff9c4;
-    border-radius: 2px; /* 角をほとんど丸めない */
+    border-radius: 2px 3px 10px 2px / 5px 2px 3px 10px;
     padding: 20px;
     /* 柔らかい、少し浮いたような影 */
     box-shadow: 2px 4px 8px rgba(0,0,0,0.1);
+	font-family: "Hiragino Maru Gothic ProN", "Kosugi Maru", sans-serif;
     
     /* 付箋らしい傾き（遊び心）を少し入れる */
     transform: rotate(-1deg);
@@ -866,14 +859,15 @@ header h1 {
 .wish-card::before {
     content: "";
     position: absolute;
-    top: -10px;
+    top: -12px;
     left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
+    transform: translateX(-50%) rotate(-2deg);
+    width: 90px;
     height: 25px;
-    background: rgba(255, 255, 255, 0.4); /* 半透明の白いテープ */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    z-index: 1;
+    background: rgba(255, 255, 255, 0.5);
+    /* テープの端を少し透けさせる・ギザギザっぽく見せる影 */
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+    backdrop-filter: blur(1px); /* すりガラス効果でテープ感を出す */
 }
 
 /* 本と映画でテープの色を少し変えてもオシャレです */
