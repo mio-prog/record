@@ -203,6 +203,7 @@ function renderStats() {
     });
 }
 
+// 棒グラフクリック時の詳細表示（アラートからモーダルへ変更）
 function showMonthlyDetail(year, monthIdx) {
     const monthName = monthIdx + 1 + "月";
     const allData = [...booksData, ...moviesData];
@@ -213,13 +214,33 @@ function showMonthlyDetail(year, monthIdx) {
 
     if (targets.length === 0) return;
 
-    const listText = targets.map(item => {
-        const icon = item.type === 'book' ? '📖' : '🎬';
-        return `${icon} ${item.title}`;
-    }).join('\n');
+    // モーダルのタイトル更新
+    document.getElementById('monthlyModalTitle').textContent = `${year}年 ${monthName} の記録`;
+    
+    // リストの生成
+    const container = document.getElementById('monthlyListContainer');
+    container.innerHTML = targets.map(item => {
+        const typePath = item.type === 'book' ? 'book' : 'movie';
+        const coverPath = `img/${typePath}/${item.coverUrl}`;
+        // クリックで詳細モーダルを開く連動も維持
+        const onClick = `openModal('${item.type === 'book' ? 'books' : 'movies'}', '${item.title.replace(/'/g, "\\'")}')`;
+        
+        return `
+            <div class="mini-item-card" onclick="${onClick}">
+                <img src="${coverPath}" class="mini-item-thumb" onerror="this.src='img/no-image.png'">
+                <div class="mini-item-title">${item.title}</div>
+            </div>
+        `;
+    }).join('');
 
-    alert(`--- ${year}年 ${monthName} の記録 ---\n\n${listText}`);
+    // モーダルを表示
+    document.getElementById('monthlyModal').classList.add('active');
 }
+
+// DOMContentLoaded内に閉じる処理を追加
+document.getElementById('monthlyModalClose').onclick = () => {
+    document.getElementById('monthlyModal').classList.remove('active');
+};
 
 // --- 2. データ読み込み＆表示処理 ---
 async function loadAppData() {
