@@ -794,3 +794,88 @@ header h1 {
         border: 3px solid #fff;
     }
 }
+
+/* Wishlist全体のグリッド */
+.wish-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+}
+
+/* ウィッシュリスト用カード */
+.wish-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wish-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* カテゴリバッジ */
+.wish-type-badge {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    background: #f0f0f0;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.wish-card h4 {
+    color: #333;
+    font-size: 1.15rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.wish-card .creator {
+    color: #666;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* メモ部分を付箋っぽく */
+.wish-card .memo {
+    margin-top: 10px;
+    padding: 12px;
+    background: #fff9c4; /* 優しい黄色 */
+    border-radius: 8px;
+    font-size: 0.88rem;
+    color: #444;
+    line-height: 1.6;
+    border-left: 4px solid #ffeb3b;
+}
+
+/* 外部リンク */
+.wish-link {
+    margin-top: auto;
+    text-align: right;
+    font-size: 0.85rem;
+    color: #764ba2;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.wish-link:hover {
+    text-decoration: underline;
+}
+
+/* スマホ対応の微調整 */
+@media (max-width: 600px) {
+    .wish-grid {
+        grid-template-columns: 1fr; /* スマホでは1列 */
+    }
+}

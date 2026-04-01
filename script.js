@@ -3,6 +3,7 @@
  */
 let booksData = [];
 let moviesData = [];
+let wishlistData = [];
 let currentSort = { 
     books: { key: 'date', asc: false }, 
     movies: { key: 'date', asc: false } 
@@ -21,7 +22,7 @@ const genreColors = {
 };
 const extraColors = ['#b9fbc0', '#fbf8cc', '#fde4cf', '#ffcfd2', '#f1c0e8', '#cfbaf0', '#a3c4f3', '#90dbf4', '#8eecf5', '#98f5e1'];
 
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbw3_O5HjDqZQ-3DbHn3WiiRmDWVRu8cwI2A4fIb2xUsLHEbRGWqHaXPolNmwcUWsYer/exec';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbz06FtcQcJxdaU4bYnLurFYwFq82HCyQDKS_Sm1CjweXX5I0r-IFL7eb13_6Z9x1w4_/exec';
 
 // --- 1. 統計・グラフ描画関数 ---
 
@@ -261,13 +262,21 @@ async function loadAppData() {
 }
 
 function renderData(allData) {
-    booksData = allData.filter(item => item.type === 'book');
-    moviesData = allData.filter(item => item.type === 'movie');
+    // GASの変更（logsとwishlistを返す形）に合わせて受け取り方を変更
+    const logs = allData.logs || [];
+    wishlistData = allData.wishlist || []; // Wishlistデータを格納
+
+    booksData = logs.filter(item => item.type === 'book');
+    moviesData = logs.filter(item => item.type === 'movie');
+    
     updateDisplay('books');
     updateDisplay('movies');
     setupFilters();
     updateStats();
     renderStats();
+    
+    // Wishlistの描画指示を追加（まだ関数を作っていない場合は、次で作ります！）
+    renderWishlist(); 
 }
 
 // --- 3. 共通・連動関数 ---
@@ -448,6 +457,31 @@ function renderTimeline() {
     container.innerHTML = html;
 }
 
+function renderWishlist() {
+    const container = document.getElementById('wishlistGrid');
+    if (!container) return;
+
+    if (wishlistData.length === 0) {
+        container.innerHTML = '<p style="color:white; text-align:center; grid-column:1/-1;">リストは空です。スプレッドシートに追加してみましょう！</p>';
+        return;
+    }
+
+    container.innerHTML = wishlistData.map(item => {
+        const icon = item.type === 'book' ? '📖' : '🎬';
+        const typeColor = item.type === 'book' ? '#a3c4f3' : '#ffd1dc';
+        
+        return `
+            <div class="wish-card" style="border-left: 8px solid ${typeColor}">
+                <div class="wish-type-badge">${icon} ${item.type === 'book' ? 'Book' : 'Movie'}</div>
+                <h4>${item.title}</h4>
+                <div class="creator">${item.creator || ''}</div>
+                <div class="memo">${(item.memo || '').replace(/\n/g, '<br>')}</div>
+                ${item.link ? `<a href="${item.link}" target="_blank" class="wish-link">詳細・リンク ↗</a>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
 // --- 4. 初期化 ---
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -466,6 +500,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (targetTab === 'stats') {
                 updateStats(); 
                 renderStats(); 
+            } else if (targetTab === 'wishlist') {
+                renderWishlist();
             } else {
                 clearFilters(targetTab);
             }
