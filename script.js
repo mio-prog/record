@@ -1,5 +1,5 @@
 /**
- * 読書・映画記録 完全版（グラフ描画・連動対応）
+ * 読書・映画記録 完全版
  */
 let booksData = [];
 let moviesData = [];
@@ -8,7 +8,7 @@ let currentSort = {
     movies: { key: 'date', asc: false } 
 };
 let genreChart = null; 
-let myYearlyChart = null; // 棒グラフ用
+let myYearlyChart = null; 
 let currentYear = "all"; 
 
 const genreColors = {
@@ -34,7 +34,6 @@ function changeYear(direction) {
     } else {
         let index = availableYears.indexOf(currentYear);
         index += direction;
-        
         if (index < 0 || index >= availableYears.length) {
             currentYear = "all";
         } else {
@@ -42,7 +41,7 @@ function changeYear(direction) {
         }
     }
     updateStats(); 
-    renderStats(); // 年変更に合わせて棒グラフも更新
+    renderStats();
 }
 
 function updateStats() {
@@ -135,16 +134,12 @@ function drawGenreChart(dataForChart) {
     }
 }
 
-// 棒グラフの描画
 function renderStats() {
     const yearlyCtx = document.getElementById('yearlyChart');
     if (!yearlyCtx) return;
-
     if (myYearlyChart) myYearlyChart.destroy();
 
     const selectedYear = parseInt(currentYear);
-
-    // 「すべて」の時は棒グラフを非表示
     if (currentYear === "all" || isNaN(selectedYear)) {
         yearlyCtx.parentElement.style.display = 'none';
         return; 
@@ -162,7 +157,7 @@ function renderStats() {
         if (d.getFullYear() === selectedYear) {
             const monthIdx = d.getMonth();
             if (item.type === 'book') monthlyBookData[monthIdx]++;
-            else monthlyMovieData[monthIdx]++;
+            else if (item.type === 'movie') monthlyMovieData[monthIdx]++;
         }
     });
 
@@ -179,19 +174,11 @@ function renderStats() {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { 
-                    beginAtZero: true, 
-                    min: 0,
-                    max: 5, // 最大値を5に固定
-                    ticks: { stepSize: 1 } 
-                }
+                y: { beginAtZero: true, min: 0, ticks: { stepSize: 1 } }
             },
             plugins: {
                 legend: { position: 'bottom' },
-                title: { 
-                    display: true, 
-                    text: `${selectedYear}年 月別記録` 
-                }
+                title: { display: true, text: `${selectedYear}年 月別記録` }
             },
             onClick: (event, elements) => {
                 if (elements.length > 0) {
@@ -203,10 +190,6 @@ function renderStats() {
     });
 }
 
-/**
- * 棒グラフクリック時の詳細表示
- * ミニモーダルを閉じ、詳細モーダルを開く連動付き
- */
 function showMonthlyDetail(year, monthIdx) {
     const monthName = monthIdx + 1 + "月";
     const allData = [...booksData, ...moviesData];
@@ -217,11 +200,9 @@ function showMonthlyDetail(year, monthIdx) {
 
     if (targets.length === 0) return;
 
-    // モーダルのタイトル更新
     const titleEl = document.getElementById('monthlyModalTitle');
     if (titleEl) titleEl.textContent = `${year}年 ${monthName} の記録`;
     
-    // リストの生成
     const container = document.getElementById('monthlyListContainer');
     if (!container) return;
 
@@ -229,41 +210,22 @@ function showMonthlyDetail(year, monthIdx) {
         const typePath = item.type === 'book' ? 'book' : 'movie';
         const coverPath = `img/${typePath}/${item.coverUrl}`;
         const dataType = item.type === 'book' ? 'books' : 'movies';
-        
-        // エスケープ処理（タイトルに ' が含まれる場合への対策）
         const escapedTitle = item.title.replace(/'/g, "\\'");
 
-        /**
-         * 【ポイント】
-         * onclickの中で、先に「monthlyModal」から active クラスを除去してから
-         * 詳細モーダルを開く openModal を実行するようにしています。
-         */
         return `
-            <div class="mini-item-card" 
-                 onclick="document.getElementById('monthlyModal').classList.remove('active'); openModal('${dataType}', '${escapedTitle}')">
+            <div class="mini-item-card" onclick="document.getElementById('monthlyModal').classList.remove('active'); openModal('${dataType}', '${escapedTitle}')">
                 <img src="${coverPath}" class="mini-item-thumb" onerror="this.src='img/no-image.png'">
                 <div class="mini-item-title">${item.title}</div>
             </div>
         `;
     }).join('');
 
-    // ミニモーダルを表示
     const monthlyModal = document.getElementById('monthlyModal');
     if (monthlyModal) monthlyModal.classList.add('active');
 }
 
-/**
- * 初期化処理 (DOMContentLoaded内に追加)
- */
-// ※すでに既存のコードにある場合は、ここだけ追加・確認してください
-const monthlyModalClose = document.getElementById('monthlyModalClose');
-if (monthlyModalClose) {
-    monthlyModalClose.onclick = () => {
-        document.getElementById('monthlyModal').classList.remove('active');
-    };
-}
-
 // --- 2. データ読み込み＆表示処理 ---
+
 async function loadAppData() {
     const CACHE_KEY = 'appData_cache';
     const TIME_KEY = 'appData_time';
@@ -296,14 +258,16 @@ function renderData(allData) {
     renderStats();
 }
 
-// --- 3. その他の共通関数 ---
+// --- 3. 共通・連動関数 ---
+
 function updateDisplay(type) {
     const data = type === 'books' ? booksData : moviesData;
     const grid = document.getElementById(`${type}Grid`);
-    const searchBox = document.getElementById(`searchBox${type.charAt(0).toUpperCase() + type.slice(1)}`);
-    const genreFilter = document.getElementById(`genreFilter${type.charAt(0).toUpperCase() + type.slice(1)}`);
+    const typeUpper = type.charAt(0).toUpperCase() + type.slice(1);
+    const searchBox = document.getElementById(`searchBox${typeUpper}`);
+    const genreFilter = document.getElementById(`genreFilter${typeUpper}`);
     
-    if (!searchBox || !genreFilter) return;
+    if (!grid || !searchBox || !genreFilter) return;
 
     const searchVal = searchBox.value.toLowerCase();
     const genreVal = genreFilter.value;
@@ -332,7 +296,7 @@ function updateDisplay(type) {
         </div>
     `).join('');
 
-    const noRes = document.getElementById(`noResults${type.charAt(0).toUpperCase() + type.slice(1)}`);
+    const noRes = document.getElementById(`noResults${typeUpper}`);
     if (noRes) noRes.style.display = filtered.length === 0 ? 'block' : 'none';
 }
 
@@ -361,33 +325,10 @@ function clearFilters(type) {
     updateDisplay(type);
 }
 
-// 著者名でフィルタリングしてタブを切り替える
-function filterByAuthor(type, authorName) {
-    // book -> books, movie -> movies に変換
-    const targetTab = type.endsWith('s') ? type : type + 's';
-    
-    // 1. タブを切り替える
-    const tabBtn = document.querySelector(`.tab-btn[data-tab="${targetTab}"]`);
-    if (tabBtn) tabBtn.click();
-
-    const typeUpper = targetTab.charAt(0).toUpperCase() + targetTab.slice(1);
-    const searchBox = document.getElementById(`searchBox${typeUpper}`);
-    if (searchBox) {
-        searchBox.value = authorName;
-        // 2. モーダルを閉じる
-        document.getElementById('modal').classList.remove('active');
-        // 3. 表示を更新
-        updateDisplay(targetTab);
-    }
-}
-
-// タグでフィルタリング
 function filterByTag(type, tagName) {
     const targetTab = type.endsWith('s') ? type : type + 's';
-    
     const tabBtn = document.querySelector(`.tab-btn[data-tab="${targetTab}"]`);
     if (tabBtn) tabBtn.click();
-
     const typeUpper = targetTab.charAt(0).toUpperCase() + targetTab.slice(1);
     const sBox = document.getElementById(`searchBox${typeUpper}`);
     if(sBox) {
@@ -396,6 +337,18 @@ function filterByTag(type, tagName) {
         updateDisplay(targetTab);
     }
 }
+
+function filterByAuthor(type, authorName) {
+    const targetTab = type.endsWith('s') ? type : type + 's';
+    const tabBtn = document.querySelector(`.tab-btn[data-tab="${targetTab}"]`);
+    if (tabBtn) tabBtn.click();
+    const typeUpper = targetTab.charAt(0).toUpperCase() + targetTab.slice(1);
+    const searchBox = document.getElementById(`searchBox${typeUpper}`);
+    if (searchBox) {
+        searchBox.value = authorName;
+        document.getElementById('modal').classList.remove('active');
+        updateDisplay(targetTab);
+    }
 }
 
 function generateStars(rating) {
@@ -443,7 +396,6 @@ function openModal(type, title) {
 function renderTimeline() {
     const container = document.getElementById('timelineContainer');
     const allData = [...booksData, ...moviesData].sort((a, b) => new Date(b.date) - new Date(a.date));
-    
     let lastMonth = null;
     let html = '';
 
@@ -472,7 +424,7 @@ function renderTimeline() {
                 <div class="card-content">
                     <div class="card-header">
                         <small>${formatJSTDate(item.date)}</small>
-                        <img src="${coverPath}" class="card-thumbnail" onerror="this.src='img/no-image.png'" alt="${item.title}のサムネイル">
+                        <img src="${coverPath}" class="card-thumbnail" onerror="this.src='img/no-image.png'">
                     </div>
                     <h4>${item.title}</h4>
                     <div class="star-rating">${generateStars(item.rating)}</div>
@@ -484,9 +436,11 @@ function renderTimeline() {
 }
 
 // --- 4. 初期化 ---
+
 document.addEventListener('DOMContentLoaded', () => {
     loadAppData();
     
+    // タブ切り替え
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.onclick = () => {
             document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
@@ -505,13 +459,25 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
     
+    // 検索窓の入力
     ['Books', 'Movies'].forEach(type => {
         const el = document.getElementById(`searchBox${type}`);
         if(el) el.oninput = () => updateDisplay(type.toLowerCase());
     });
     
-    document.getElementById('modalClose').onclick = () => document.getElementById('modal').classList.remove('active');
+    // 閉じるボタン（メインモーダル）
+    const modalClose = document.getElementById('modalClose');
+    if (modalClose) {
+        modalClose.onclick = () => document.getElementById('modal').classList.remove('active');
+    }
+
+    // 閉じるボタン（ミニモーダル）
+    const monthlyModalClose = document.getElementById('monthlyModalClose');
+    if (monthlyModalClose) {
+        monthlyModalClose.onclick = () => document.getElementById('monthlyModal').classList.remove('active');
+    }
     
+    // 並び替えボタン
     document.querySelectorAll('.sort-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const type = btn.dataset.type;
