@@ -1,8 +1,4 @@
 @charset "utf-8";
-
-/* =========================================
-   1. 基本レイアウト・リセット
-   ========================================= */
 * {
     margin: 0;
     padding: 0;
@@ -32,28 +28,28 @@ header h1 {
     margin-bottom: 20px;
 }
 
-/* =========================================
-   2. タブ切り替えメニュー
-   ========================================= */
+/* タブ全体のコンテナ */
 .tab-buttons {
     display: flex;
-    overflow-x: auto;          /* スマホで横スクロール可能に */
-    white-space: nowrap;       /* ボタンを改行させない */
+    overflow-x: auto;          /* 横スクロールを許可 */
+    white-space: nowrap;       /* ボタンを折り返さない */
     padding: 10px 0;
-    gap: 10px;
-    -webkit-overflow-scrolling: touch; /* iOS用スムーズスクロール */
-    scrollbar-width: none;     /* Firefoxでバーを隠す */
+    gap: 10px;                 /* ボタン同士の間隔 */
+    -webkit-overflow-scrolling: touch; /* iPhoneでのスムーズスクロール */
+    scrollbar-width: none;     /* Firefoxでスクロールバーを隠す */
 }
 
+/* スクロールバーを隠す（Chrome/Safari用） */
 .tab-buttons::-webkit-scrollbar {
-    display: none;             /* Chrome等でバーを隠す */
+    display: none;
 }
 
+/* ボタンのデザイン */
 .tab-btn {
-    flex-shrink: 0;
+    flex-shrink: 0;            /* ボタンが縮むのを防ぐ */
     padding: 8px 16px;
     border: 1px solid #ccc;
-    border-radius: 20px;
+    border-radius: 20px;       /* 角を丸くして今風に */
     background: #fff;
     cursor: pointer;
     transition: all 0.2s;
@@ -63,6 +59,7 @@ header h1 {
     background: rgba(255, 255, 255, 0.3);
 }
 
+/* アクティブなボタンの色 */
 .tab-btn.active {
     background: #a3c4f3;
     color: #fff;
@@ -70,16 +67,13 @@ header h1 {
 }
 
 .tab-content {
-    display: none;             /* 基本は非表示 */
+    display: none;
 }
 
 .tab-content.active {
-    display: block;            /* activeクラスがついたものだけ表示 */
+    display: block;
 }
 
-/* =========================================
-   3. 検索・ソート・フィルタ操作エリア
-   ========================================= */
 .controls {
     background: white;
     padding: 20px;
@@ -95,7 +89,7 @@ header h1 {
     margin-bottom: 16px;
 }
 
-.search-box, .genre-filter {
+.search-box {
     width: 100%;
     padding: 12px 16px;
     border: 2px solid #e0e0e0;
@@ -109,6 +103,16 @@ header h1 {
     border-color: #667eea;
 }
 
+.genre-filter {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    background: white;
+    cursor: pointer;
+}
+
 .clear-btn {
     background: none;
     border: none;
@@ -116,7 +120,11 @@ header h1 {
     text-decoration: underline;
     cursor: pointer;
     font-size: 14px;
-    text-align: right;
+	text-align: right;
+}
+
+.clear-btn:hover {
+    color: #343a40;
 }
 
 .sort-buttons {
@@ -135,11 +143,15 @@ header h1 {
     color: #333;
     font-size: 14px;
     cursor: pointer;
+    transition: all 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    transition: all 0.3s;
+}
+
+.sort-btn:hover {
+    background: #e0e0e0;
 }
 
 .sort-btn.active {
@@ -147,19 +159,22 @@ header h1 {
     color: white;
 }
 
-/* =========================================
-   4. 作品グリッド・カード表示
-   ========================================= */
 .books-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* スマホは3列 */
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
     margin-bottom: 30px;
 }
 
+@media (min-width: 768px) {
+    .books-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 @media (min-width: 1024px) {
     .books-grid {
-        grid-template-columns: repeat(4, 1fr); /* PCは4列 */
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
@@ -172,6 +187,7 @@ header h1 {
     cursor: pointer;
     display: flex;
     flex-direction: column;
+    /* height: 250px; は削除または auto にします */
 }
 
 .book-card:hover {
@@ -181,61 +197,99 @@ header h1 {
 
 .book-cover {
     width: 100%;
-    aspect-ratio: 2 / 3;      /* 文庫本比率で統一 */
-    object-fit: cover;        /* 枠に合わせて切り抜き */
+    /* ここで比率を固定！横幅に対する高さを自動計算します */
+    /* 文庫本風なら 2/3、もう少し正方形に近ければ 3/4 など */
+    aspect-ratio: 2 / 3; 
+    
+    /* これが重要！画像がどんな比率でも、枠いっぱいにトリミングして埋めます */
+    object-fit: cover; 
+    
     background: #f5f5f5;
 }
 
 .book-info {
+    /* paddingを少し小さくして、下の情報の見切れを防ぎます */
     padding: 12px 10px;
     background: #fff;
-    min-height: 80px;
+	min-height: 80px;
 }
 
-/* カード内のタイトルは基本非表示（画像で判断させる場合） */
+.book-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* カード内のタイトルだけ消す */
 .book-card .book-title {
     display: none;
+    white-space: nowrap;      /* 改行を禁止する */
+    overflow: hidden;         /* はみ出した分を隠す */
+    text-overflow: ellipsis;  /* はみ出しを「…」にする */
+ 
 }
 
 .book-author {
     font-size: 12px;
     color: #666;
     margin-bottom: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
+    white-space: nowrap;      /* 改行を禁止する */
+    overflow: hidden;         /* はみ出した分を隠す */
+    text-overflow: ellipsis;  /* はみ出しを「…」にする */    
+    display: block;           /* 確実に1行として扱う */
 }
 
 .book-date {
     font-size: 12px;
     color: #999;
+    margin-bottom: 2px;
 }
 
-/* 星評価表示 */
+.book-rating {
+    width: 100%;             /* カードの幅に合わせる */
+    overflow: hidden;        /* はみ出しをカット */
+    margin-top: auto;        /* カードの一番下に配置 */
+}
+
+/* 星全体を包む器 */
 .star-rating {
     position: relative;
     display: inline-block;
-    font-size: 15px;
-    letter-spacing: -2px;
+    font-size: 15px; /* ★ここを14px〜18pxの間で調整してください */
+    line-height: 1;
+    letter-spacing: -2px; /* ★間隔を詰めるとカード内に収まりやすくなります */
+    cursor: default;
+    user-select: none;
 }
-.star-base { color: #e0e0e0; }
+
+/* 下地のグレーの星 */
+.star-base {
+    color: #e0e0e0; /* 薄いグレー */
+}
+
+/* 上に乗る金色の星 */
 .star-current {
     position: absolute;
-    top: 0; left: 0;
-    color: #FFD700;
+    top: 0;
+    left: 0;
+    color: #FFD700; /* ゴールド */
     overflow: hidden;
     white-space: nowrap;
 }
 
-/* =========================================
-   5. 詳細モーダルウィンドウ
-   ========================================= */
 .modal {
     display: none;
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0,0,0,0.7);
     z-index: 1000;
     overflow-y: auto;
@@ -258,6 +312,28 @@ header h1 {
     margin: 20px 0;
 }
 
+.modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: rgba(0,0,0,0.1);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+    z-index: 10;
+}
+
+.modal-close:hover {
+    background: rgba(0,0,0,0.2);
+}
+
 .modal-header {
     display: flex;
     gap: 16px;
@@ -271,14 +347,82 @@ header h1 {
     overflow: hidden;
 }
 
-.modal-cover img { width: 100%; height: auto; display: block; }
+.modal-cover img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
 
-.modal-title { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+.modal-basic-info {
+    flex: 1;
+    padding-top: 8px;
+}
 
+.modal-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+    padding-right: 30px;
+}
+
+.modal-author {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 6px;
+}
+
+/* モーダル内の著者名のスタイル */
 .clickable-author {
-    color: #4A90E2;
-    text-decoration: underline;
+    color: #4A90E2; /* リンクっぽい青色 */
+    text-decoration: underline; /* 下線 */
     cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.clickable-author:hover {
+    opacity: 0.7;
+}
+
+.modal-date {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 10px;
+}
+
+.modal-rating {
+    font-size: 10px;
+    color: #FFD700;
+}
+
+.modal-body {
+    margin-top: 20px;
+}
+
+.modal-section {
+    margin-bottom: 16px;
+}
+
+.modal-section-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.modal-section-content {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.7;
+}
+
+.modal-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .tag-badge {
@@ -289,9 +433,29 @@ header h1 {
     font-size: 13px;
 }
 
-/* =========================================
-   6. 統計 (Stats) タブエリア
-   ========================================= */
+.star-full {
+    color: #FFD700;
+}
+
+.star-half {
+    background: linear-gradient(90deg, #FFD700 50%, #ddd 50%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.star-empty {
+    color: #ddd;
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px;
+    color: white;
+    font-size: 18px;
+}
+
+/* 統計タブ全体のレイアウト */
 .year-selector {
     display: flex;
     align-items: center;
@@ -301,15 +465,39 @@ header h1 {
     background: #fff;
     padding: 10px;
     border-radius: 50px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.year-selector h2 {
+    margin: 0;
+    font-size: 1rem;
+    min-width: 100px;
+    text-align: center;
+}
+
+.year-selector button {
+    background: #f0f0f0;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.year-selector button:hover {
+    background: #e0e0e0;
 }
 
 .stats-summary {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr); /* 3つ並べる */
     gap: 10px;
     margin-bottom: 20px;
 }
 
+/* 各数値カードのデザイン */
 .stat-card {
     background: white;
     padding: 15px;
@@ -318,29 +506,98 @@ header h1 {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* グラフの外枠：ここが原因で横並びにならない可能性があります */
+.stat-card h3 {
+    font-size: 12px;
+    color: #888;
+    margin: 0 0 5px 0;
+}
+
+.stat-card p {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+    color: #333;
+}
+
+/* グラフエリア（ここで背景と影を指定） */
 .canvas-wrapper {
-    background: white;
+    background: white;        /* 文字が読めるように背景を白に */
     border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    max-width: 400px;  /* ← グラフが小さい原因 */
-    margin: 20px auto; /* ← 常に中央寄せになる原因 */
-    text-align: center;
-    width: 100%;
+	padding: 20px;            /* グラフと枠の間に余白 */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 影をつける */
+	max-width: 400px; /* ここでグラフ全体の大きさを制限 */
+    margin: 20px auto; /* 上下に余白をとり、中央寄せにする */	
+	text-align: center;
+	width: 100%
 }
 
 .custom-legend {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
+    display: flex;          /* 横並びにするための flex */
+    flex-wrap: wrap;        /* 画面幅が狭いときは自動で折り返す */
+    justify-content: center; /* 項目全体を中央に寄せる */
+    gap: 10px ;              /* 項目同士の隙間を調整 */
     margin-top: 20px;
 }
 
-/* =========================================
-   7. タイムライン表示
-   ========================================= */
+.legend-item {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;    /* 文字が途中で改行されるのを防ぐ */
+}
+
+/* ■の四角形 */
+.legend-box {
+    width: 12px;
+    height: 12px;
+    margin-right: 6px;      /* 四角と文字の隙間 */
+    border-radius: 2px;
+}
+.legend-text {
+    line-height: 1; /* 文字が複数行になる場合の行間 */
+}
+
+.stats-container {
+    width: 100%;
+    height: 300px;
+    margin: 20px 0;
+    background: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: none; 
+}
+/*ミニモーダル*/
+.mini-modal {
+    max-width: 400px !important; /* 少し小さめに */
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.mini-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2列に並べる */
+    gap: 10px;
+    padding: 10px 0;
+}
+
+.mini-item-card {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.mini-item-thumb {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+/*----タイムライン共通----*/
 .timeline-container {
     position: relative;
     max-width: 800px;
@@ -348,16 +605,27 @@ header h1 {
     padding: 20px 0;
 }
 
-/* 中央の縦線 */
+/* 中央の縦線（PC用） */
 .timeline-container::after {
     content: '';
     position: absolute;
     width: 4px;
     background-color: #e0e0e0;
-    top: 0; bottom: 0; left: 50%;
+    top: 0;
+    bottom: 0;
+    left: 50%;
     margin-left: -2px;
 }
+/* PC: 中央配置のためのラッパー */
+.timeline-month-wrapper {
+    text-align: center;
+    width: 100%;
+    margin: 40px 0 20px 0;
+    z-index: 3;
+    position: relative;
+}
 
+/* ラベル本体 */
 .timeline-month-label {
     display: inline-block;
     padding: 6px 20px;
@@ -365,17 +633,29 @@ header h1 {
     color: #fff;
     border-radius: 20px;
     font-weight: bold;
-    position: relative;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 3;
 }
 
+/* スマホ用: 左側に寄せる */
+@media (max-width: 600px) {
+    .timeline-month-wrapper {
+        text-align: left; /* 左寄せ */
+        padding-left: 10px; /* 線と重ならないよう微調整 */
+
+    }
+}
+
+/* カードの基本設定（統一） */
 .timeline-card {
     position: relative;
     width: 45%;
     cursor: pointer;
-    margin-bottom: 20px;
+    margin-bottom: 20px; /* ジグザグの重なりを減らすならここを調整 */
 }
 
+/* 統一されたカードの中身 */
 .card-content {
     background: #fff;
     padding: 15px;
@@ -383,42 +663,103 @@ header h1 {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     transition: transform 0.2s;
 }
+.card-content:hover { transform: scale(1.02); }
 
+.card-content small { color: #888; display: block; font-size: 0.8rem; }
+.card-content h4 { margin: 5px 0; font-size: 0.95rem; line-height: 1.3; }
+
+
+/* カード内の画像と文字のスタイル */
+.card-content {
+    background: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+.card-content:hover { transform: scale(1.02); }
+
+/* 日付とサムネイルを横並びにするラッパー */
+.card-header {
+    display: flex;
+    align-items: flex-start; /* centerから変更 */
+    justify-content: space-between;
+    margin-bottom: 0px !important; 
+    min-height: 40px; /* 画像の高さに合わせて調整 */
+}
+
+/* サムネイル画像 */
 .card-thumbnail {
-    width: 50px;
+    width: 50px; /* 少し小さくすると全体のバランスがタイトになります */
     height: 50px;
     object-fit: cover;
     border-radius: 4px;
+    flex-shrink: 0;
 }
+
+.card-content small { color: #888; font-size: 0.8rem; }
+.card-content h4 {
+    margin: -20px 0 0px 0 !important; /* マイナス値を大きくしてさらに引き寄せる */
+    font-size: 0.95rem;
+    line-height: 1.2;
+}
+
+@media (max-width: 600px) {
+	.card-content {
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+	}
+	
+    .card-content h4 {
+    margin: -30px 0 0px 0 !important; /* マイナス値を大きくしてさらに引き寄せる */
+	}
+}
+
+
 
 /* PC時のジグザグ配置 */
 @media (min-width: 601px) {
+    .timeline-card { margin-bottom: -30px; } /* 少し重なりを残す */
     .timeline-card:nth-child(odd) { left: 0; }
     .timeline-card:nth-child(even) { left: 55%; }
+    
     .timeline-card::before {
         content: '';
         position: absolute;
-        width: 16px; height: 16px;
+        width: 16px;
+        height: 16px;
         background-color: #a3c4f3;
-        border: 3px solid #fff;
         border-radius: 50%;
         top: 25px;
         z-index: 2;
+        /* 追加・修正部分 */
+        border: 3px solid #fff; /* ドットの周りに白枠を入れると線と馴染みます */
     }
     .timeline-card:nth-child(odd)::before { right: -50px; }
     .timeline-card:nth-child(even)::before { left: -50px; }
 }
 
-/* スマホ時の1カラム配置 */
+/* スマホ用の上書き設定 */
 @media (max-width: 600px) {
-    .timeline-container::after { left: 20px; }
+    .timeline-container::after { left: 20px; margin-left: 0; }
     .timeline-card {
         width: 85% !important;
         margin-left: 45px !important;
+        margin-bottom: 20px !important;
         left: 0 !important;
     }
     .timeline-card::before {
+        content: '';
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background-color: #a3c4f3;
+        border-radius: 50%;
         left: -33px !important;
+        top: 20px;
+        z-index: 2;
         border: 3px solid #fff;
     }
 }
