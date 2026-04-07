@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="robots" content="noindex">
     <title>📚🎬 読書・映画記録</title>
+	<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -158,6 +159,36 @@
 	<!--wishlist-->
 	<div id="wishlistTab" class="tab-content">
     <div id="wishlistGrid" class="wish-grid"></div>
+	</div>
+	
+	<div id="wishDoneModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3>🎉 読了・鑑賞おめでとう！</h3>
+            <button class="modal-close" id="wishDoneClose">×</button>
+        </div>
+        <div class="wish-done-body" style="padding: 20px;">
+            <p id="wishDoneItemName" style="font-weight: bold; margin-bottom: 20px; color: #333; font-size: 1.1rem; border-left: 4px solid #764ba2; padding-left: 10px;"></p>
+            
+            <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #666;">評価（星をタップ）</label>
+            <div class="star-rating">
+                <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
+                <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+                <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+                <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+                <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+            </div>
+
+            <label for="doneDate" style="display: block; margin: 15px 0 5px; font-size: 0.9rem; color: #666;">読了日</label>
+            <input type="date" id="doneDate" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+
+            <label for="doneMemo" style="display: block; margin: 15px 0 5px; font-size: 0.9rem; color: #666;">感想・メモ</label>
+            <textarea id="doneMemo" rows="4" placeholder="どんなところが良かった？" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit;"></textarea>
+
+            <button id="submitDoneBtn" class="submit-btn">この内容で記録に保存する</button>
+            <p style="text-align: center; font-size: 0.8rem; color: #999; margin-top: 10px;">※送信するとWishlistから削除されます</p>
+        </div>
+    </div>
 	</div>
 
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

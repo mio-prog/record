@@ -478,13 +478,16 @@ function renderWishlist() {
         const stickyColor = item.type === 'book' ? '#fff9c4' : '#ffd1dc';
         
         return `
-            <div class="wish-card" style="background: ${stickyColor};">
-                <div class="wish-type-badge">${icon} ${typeLabel}</div>
-                <h4>${item.title}</h4>
-                <div class="creator">${item.creator || ''}</div>
-                <div class="memo">${(item.memo || '').replace(/\n/g, '<br>')}</div>
-                ${item.link ? `<a href="${item.link}" target="_blank" class="wish-link">🔗 リンク</a>` : ''}
-            </div>
+        <div class="wish-card" style="background: ${stickyColor};">
+        <div class="wish-type-badge">${icon} ${typeLabel}</div>
+        
+        <div class="wish-done-check" title="記録へ昇格" onclick="event.stopPropagation(); openWishDoneModal('${item.title}', '${item.type}')">✔</div>
+        
+        <h4>${item.title}</h4>
+        <div class="creator">${item.creator || ''}</div>
+        <div class="memo">${(item.memo || '').replace(/\n/g, '<br>')}</div>
+        ${item.link ? `<a href="${item.link}" target="_blank" class="wish-link" onclick="event.stopPropagation()">🔗 リンク</a>` : ''}
+        </div>
         `;
     }).join('');
 }
@@ -547,4 +550,22 @@ document.addEventListener('DOMContentLoaded', () => {
             updateDisplay(type);
         });
     });
+});
+
+// 読了登録モーダルを開く
+function openWishDoneModal(title, type) {
+    // フォームをリセット
+    document.getElementById('wishDoneItemName').textContent = title;
+    document.getElementById('doneDate').value = new Date().toLocaleDateString('sv-SE'); // 今日の日付をセット
+    document.getElementById('doneMemo').value = '';
+    const stars = document.getElementsByName('rating');
+    stars.forEach(s => s.checked = false);
+
+    // モーダル表示
+    document.getElementById('wishDoneModal').classList.add('active');
+}
+
+// 閉じるボタンのイベント設定（DOMContentLoaded内に追加）
+document.getElementById('wishDoneClose').addEventListener('click', () => {
+    document.getElementById('wishDoneModal').classList.remove('active');
 });
