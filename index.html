@@ -174,12 +174,15 @@
 				評価：<span id="starValue" style="font-weight: bold; color: #ffca28; font-size: 1.2rem;">3.0</span>
 			</label>
 			<div class="star-rating-container">
-				<input type="range" id="ratingRange" min="0" max="5" step="0.5" value="3.0" oninput="updateStars(this.value)">
-				<div class="star-display" id="starDisplay">★★★☆☆</div>
+			<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+			<span style="font-size: 0.9rem; color: #666;">評価</span>
+			<span id="starValue" style="font-weight: bold; color: #ffca28; font-size: 1.5rem;">3.0</span>
+			</div>
+			<input type="range" id="ratingRange" min="0" max="5" step="0.5" value="3.0" oninput="updateStars(this.value)">
 			</div>
 
-            <label for="doneDate" style="display: block; margin: 15px 0 5px; font-size: 0.9rem; color: #666;">読了日</label>
-            <input type="date" id="doneDate" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+            <label for="doneDate" style="display: block; margin: 15px 0 5px; font-size: 0.9rem; color: #666;">完了日</label>
+			<input type="date" id="doneDate" class="wish-done-input">
 
             <label for="doneMemo" style="display: block; margin: 15px 0 5px; font-size: 0.9rem; color: #666;">感想・メモ</label>
             <textarea id="doneMemo" rows="4" placeholder="どんなところが良かった？" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit;"></textarea>

@@ -911,8 +911,8 @@ header h1 {
 /* 付箋内の完了ボタン（左下） */
 .wish-done-check {
     position: absolute;
-    top: 10px;    /* bottomからtopに変更 */
-    right: 10px;  /* leftからrightに変更 */
+    top: 12px;    /* bottomからtopに変更 */
+    right: 12px;  /* leftからrightに変更 */
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 50%;
@@ -937,16 +937,19 @@ header h1 {
 }
 
 /* フォーム内の入力要素の幅を統一 */
-.wish-done-body input[type="date"],
+.wish-done-input,
 .wish-done-body textarea {
     width: 100%;
+    max-width: 100%; /* 親要素からはみ出さないように */
     box-sizing: border-box; /* paddingを含めた幅計算にする */
-    padding: 10px;
+    padding: 12px;
     margin-bottom: 15px;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 8px;
+    background-color: #f9f9f9; /* ほんの少しグレーにすると入力感が出ます */
     font-family: inherit;
     font-size: 1rem;
+    appearance: none; /* ブラウザ独自のスタイルをリセット */
 }
 
 /* 星評価（ラジオボタンを星に見せる） */

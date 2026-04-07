@@ -570,17 +570,6 @@ document.getElementById('wishDoneClose').addEventListener('click', () => {
     document.getElementById('wishDoneModal').classList.remove('active');
 });
 function updateStars(val) {
-    // 数値を表示
+    // 数値を小数点1ケタで表示するだけにする
     document.getElementById('starValue').textContent = parseFloat(val).toFixed(1);
-    
-    // 星の文字列を生成（0.5は別の文字にするか、数値で表現するのがWebでは一般的です）
-    // 今回はシンプルに数値と連動させます
-    const fullStars = Math.floor(val);
-    const hasHalf = val % 1 !== 0;
-    const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
-    
-    const starString = '★'.repeat(fullStars) + (hasHalf ? '☆' : '') + '☆'.repeat(emptyStars);
-    // ※ 0.5の表現は「☆」を半分の色にするのはCSSが複雑になるため、
-    // まずは「★」と「☆」の組み合わせ、あるいは数値メインが安全です
-    document.getElementById('starDisplay').textContent = starString;
 }
