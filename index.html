@@ -170,14 +170,13 @@
         <div class="wish-done-body" style="padding: 20px;">
             <p id="wishDoneItemName" style="font-weight: bold; margin-bottom: 20px; color: #333; font-size: 1.1rem; border-left: 4px solid #764ba2; padding-left: 10px;"></p>
             
-            <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #666;">評価（星をタップ）</label>
-            <div class="star-rating">
-                <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
-                <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
-                <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
-                <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
-                <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
-            </div>
+            <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #666;">
+				評価：<span id="starValue" style="font-weight: bold; color: #ffca28; font-size: 1.2rem;">3.0</span>
+			</label>
+			<div class="star-rating-container">
+				<input type="range" id="ratingRange" min="0" max="5" step="0.5" value="3.0" oninput="updateStars(this.value)">
+				<div class="star-display" id="starDisplay">★★★☆☆</div>
+			</div>
 
             <label for="doneDate" style="display: block; margin: 15px 0 5px; font-size: 0.9rem; color: #666;">読了日</label>
             <input type="date" id="doneDate" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">

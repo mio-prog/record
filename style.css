@@ -911,21 +911,22 @@ header h1 {
 /* 付箋内の完了ボタン（左下） */
 .wish-done-check {
     position: absolute;
-    bottom: 12px;
-    left: 12px;
-    background: rgba(255, 255, 255, 0.8);
+    top: 10px;    /* bottomからtopに変更 */
+    right: 10px;  /* leftからrightに変更 */
+    background: rgba(255, 255, 255, 0.9);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 50%;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: #888;
     transition: all 0.2s;
     z-index: 5;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .wish-done-check:hover {
@@ -935,8 +936,41 @@ header h1 {
     border-color: #4caf50;
 }
 
+/* フォーム内の入力要素の幅を統一 */
+.wish-done-body input[type="date"],
+.wish-done-body textarea {
+    width: 100%;
+    box-sizing: border-box; /* paddingを含めた幅計算にする */
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
 /* 星評価（ラジオボタンを星に見せる） */
-.star-rating {
+/* スライダー自体の見た目を調整 */
+.star-rating-container {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+#ratingRange {
+    width: 100%;
+    cursor: pointer;
+    accent-color: #ffca28; /* スライダーの色 */
+}
+
+/* 星の見た目 */
+.star-display {
+    font-size: 24px;
+    color: #ffca28;
+    letter-spacing: 5px;
+    margin-top: 5px;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+/*.star-rating {
     display: flex;
     flex-direction: row-reverse;
     justify-content: flex-end;
@@ -953,7 +987,7 @@ header h1 {
 .star-rating label:hover ~ label,
 .star-rating input:checked ~ label {
     color: #ffca28;
-}
+}*/
 
 /* 昇格ボタンのグラデーション */
 .submit-btn {
