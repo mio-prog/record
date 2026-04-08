@@ -12,6 +12,10 @@ let genreChart = null;
 let myYearlyChart = null; 
 let currentYear = "all"; 
 
+// ★追加：Wishlistから昇格する際の一時保存用変数
+let currentTargetType = "";
+let currentTargetCreator = "";
+
 const genreColors = {
     "ビジネス": "#a3c4f3",
     "自然科学": "#90dbf4",
@@ -22,6 +26,7 @@ const genreColors = {
 };
 const extraColors = ['#b9fbc0', '#fbf8cc', '#fde4cf', '#ffcfd2', '#f1c0e8', '#cfbaf0', '#a3c4f3', '#90dbf4', '#8eecf5', '#98f5e1'];
 
+// あなたのGAS URL
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbz06FtcQcJxdaU4bYnLurFYwFq82HCyQDKS_Sm1CjweXX5I0r-IFL7eb13_6Z9x1w4_/exec';
 
 // --- 1. 統計・グラフ描画関数 ---
@@ -158,7 +163,7 @@ function renderStats() {
         if (d.getFullYear() === selectedYear) {
             const monthIdx = d.getMonth();
             if (item.type === 'book') monthlyBookData[monthIdx]++;
-            else if (item.type === 'movie') monthlyMovieData[monthIdx]++; // 明示的に判定
+            else if (item.type === 'movie') monthlyMovieData[monthIdx]++;
         }
     });
 
@@ -178,8 +183,8 @@ function renderStats() {
                 y: { 
                     beginAtZero: true, 
                     min: 0, 
-                    max: 5,           // 最大値を5に固定
-                    ticks: { stepSize: 1 } // 1刻み
+                    max: 5,            
+                    ticks: { stepSize: 1 }
                 }
             },
             plugins: {
@@ -222,7 +227,6 @@ function showMonthlyDetail(year, monthIdx) {
             <div class="mini-item-card" 
                  onclick="
                     document.getElementById('monthlyModal').classList.remove('active'); 
-                    /* 詳細を開く前にタブを切り替えておく */
                     const tabBtn = document.querySelector('.tab-btn[data-tab=\\'${dataType}\\']');
                     if(tabBtn) tabBtn.click();
                     openModal('${dataType}', '${escapedTitle}');
@@ -244,7 +248,7 @@ async function loadAppData() {
     const TIME_KEY = 'appData_time';
     const cachedData = localStorage.getItem(CACHE_KEY);
     const cachedTime = localStorage.getItem(TIME_KEY);
-    const isExpired = !cachedTime || (Date.now() - cachedTime > 60000);
+    const isExpired = !cachedTime || (Date.now() - cachedTime > 60000); // 1分キャッシュ
 
     if (cachedData && !isExpired) {
         renderData(JSON.parse(cachedData));
@@ -262,9 +266,8 @@ async function loadAppData() {
 }
 
 function renderData(allData) {
-    // GASの変更（logsとwishlistを返す形）に合わせて受け取り方を変更
     const logs = allData.logs || [];
-    wishlistData = allData.wishlist || []; // Wishlistデータを格納
+    wishlistData = allData.wishlist || []; 
 
     booksData = logs.filter(item => item.type === 'book');
     moviesData = logs.filter(item => item.type === 'movie');
@@ -274,8 +277,6 @@ function renderData(allData) {
     setupFilters();
     updateStats();
     renderStats();
-    
-    // Wishlistの描画指示を追加（まだ関数を作っていない場合は、次で作ります！）
     renderWishlist(); 
 }
 
@@ -381,7 +382,7 @@ function generateStars(rating) {
 function formatJSTDate(dateString) {
     if (!dateString) return "";
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString; // 変換できない場合はそのまま返す
+    if (isNaN(date.getTime())) return dateString; 
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
@@ -461,38 +462,90 @@ function renderWishlist() {
     const container = document.getElementById('wishlistGrid');
     if (!container) return;
 
-    // 空行対策：タイトルがあるデータのみ抽出
     const validData = wishlistData.filter(item => item.title && item.title.trim() !== "");
 
     if (validData.length === 0) {
-        container.innerHTML = '<p style="color:white; text-align:center; grid-column:1/-1;">リストは空です。スプレッドシートに追加してみましょう！</p>';
+        container.innerHTML = '<p style="color:white; text-align:center; grid-column:1/-1;">リストは空です。右下の「＋」から追加してみましょう！</p>';
         return;
     }
 
     container.innerHTML = validData.map(item => {
         const icon = item.type === 'book' ? '📖' : '🎬';
         const typeLabel = item.type === 'book' ? 'Book' : 'Movie';
-        
-        // --- 色の振り分け ---
-        // 本は「薄い黄色」、映画は「薄いピンク」
         const stickyColor = item.type === 'book' ? '#fff9c4' : '#ffd1dc';
         
+        // ★修正: 引数に creator を追加し、タイトル等のクォーテーションをエスケープ
+        const safeTitle = item.title.replace(/'/g, "\\'");
+        const safeCreator = (item.creator || '').replace(/'/g, "\\'");
+
         return `
         <div class="wish-card" style="background: ${stickyColor};">
-        <div class="wish-type-badge">${icon} ${typeLabel}</div>
-        
-        <div class="wish-done-check" title="記録へ昇格" onclick="event.stopPropagation(); openWishDoneModal('${item.title}', '${item.type}')">✔</div>
-        
-        <h4>${item.title}</h4>
-        <div class="creator">${item.creator || ''}</div>
-        <div class="memo">${(item.memo || '').replace(/\n/g, '<br>')}</div>
-        ${item.link ? `<a href="${item.link}" target="_blank" class="wish-link" onclick="event.stopPropagation()">🔗 リンク</a>` : ''}
+            <div class="wish-type-badge">${icon} ${typeLabel}</div>
+            <div class="wish-done-check" title="記録へ昇格" onclick="event.stopPropagation(); openWishDoneModal('${safeTitle}', '${item.type}', '${safeCreator}')">✔</div>
+            <h4>${item.title}</h4>
+            <div class="creator">${item.creator || ''}</div>
+            <div class="memo">${(item.memo || '').replace(/\n/g, '<br>')}</div>
+            ${item.link ? `<a href="${item.link}" target="_blank" class="wish-link" onclick="event.stopPropagation()">🔗 リンク</a>` : ''}
         </div>
         `;
     }).join('');
 }
 
-// --- 4. 初期化 ---
+// --- 4. モーダル操作系 ---
+
+// ★修正: wishlist 読了登録モーダルを開く（creatorを追加で受け取る）
+function openWishDoneModal(title, type, creator) {
+    currentTargetType = type;
+    currentTargetCreator = creator;
+
+    document.getElementById('wishDoneItemName').textContent = title;
+    document.getElementById('doneDate').value = new Date().toLocaleDateString('sv-SE'); 
+    document.getElementById('doneMemo').value = '';
+    
+    // ★修正: 古いラジオボタンのリセットを消し、スライダーを3.0にリセットする処理
+    const ratingRange = document.getElementById('ratingRange');
+    if (ratingRange) {
+        ratingRange.value = "3.0";
+        updateStarsRange("3.0");
+    }
+
+    document.getElementById('wishDoneModal').classList.add('active');
+}
+
+// スライダー横の数字を更新
+function updateStarsRange(val) {
+    const valueDisplay = document.getElementById('starValueRange');
+    if (valueDisplay) {
+        valueDisplay.textContent = parseFloat(val).toFixed(1);
+    }
+}
+
+// --- 5. 送信・保存処理 (GAS連携) ---
+
+async function sendToGAS(data, btnElement, originalText) {
+    try {
+        const response = await fetch(SHEET_URL, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        if (response.ok) {
+            alert('保存完了しました！');
+            // 古いキャッシュを消して、最新のデータを読み込み直す
+            localStorage.removeItem('appData_cache');
+            localStorage.removeItem('appData_time');
+            location.reload(); 
+        }
+    } catch (e) {
+        alert('保存に失敗しました。通信環境を確認してください。');
+        console.error(e);
+        if (btnElement) {
+            btnElement.textContent = originalText;
+            btnElement.disabled = false;
+        }
+    }
+}
+
+// --- 6. 初期化とイベントリスナー ---
 
 document.addEventListener('DOMContentLoaded', () => {
     loadAppData();
@@ -505,43 +558,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetTab = btn.dataset.tab;
             document.getElementById(`${targetTab}Tab`).classList.add('active');
             
-            if (targetTab === 'timeline') {
-                renderTimeline();
-            } else if (targetTab === 'stats') {
-                updateStats(); 
-                renderStats(); 
-            } else if (targetTab === 'wishlist') {
-                renderWishlist();
-            } else {
-                clearFilters(targetTab);
-            }
+            if (targetTab === 'timeline') renderTimeline();
+            else if (targetTab === 'stats') { updateStats(); renderStats(); }
+            else if (targetTab === 'wishlist') renderWishlist();
+            else clearFilters(targetTab);
         };
     });
     
-    // 検索窓の入力
+    // 検索窓
     ['Books', 'Movies'].forEach(type => {
         const el = document.getElementById(`searchBox${type}`);
         if(el) el.oninput = () => updateDisplay(type.toLowerCase());
     });
     
-    // 閉じるボタン（メインモーダル）
-    const modalClose = document.getElementById('modalClose');
-    if (modalClose) {
-        modalClose.onclick = () => document.getElementById('modal').classList.remove('active');
-    }
-
-    // 閉じるボタン（ミニモーダル）
-    const monthlyModalClose = document.getElementById('monthlyModalClose');
-    if (monthlyModalClose) {
-        monthlyModalClose.onclick = () => document.getElementById('monthlyModal').classList.remove('active');
-    }
-    
-    // 並び替えボタン
+    // 並び替え
     document.querySelectorAll('.sort-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const type = btn.dataset.type;
-            const sortKey = btn.dataset.sort;
-            currentSort[type].key = sortKey;
+            currentSort[type].key = btn.dataset.sort;
             currentSort[type].asc = !currentSort[type].asc;
             const arrow = btn.querySelector('span');
             if (arrow) arrow.textContent = currentSort[type].asc ? '↑' : '↓';
@@ -550,45 +584,71 @@ document.addEventListener('DOMContentLoaded', () => {
             updateDisplay(type);
         });
     });
-});
 
-// wishlist 読了登録モーダルを開く
-function openWishDoneModal(title, type) {
-    // フォームをリセット
-    document.getElementById('wishDoneItemName').textContent = title;
-    document.getElementById('doneDate').value = new Date().toLocaleDateString('sv-SE'); // 今日の日付をセット
-    document.getElementById('doneMemo').value = '';
-    const stars = document.getElementsByName('rating');
-    stars.forEach(s => s.checked = false);
+    // 各種モーダルの閉じるボタン
+    const modalClose = document.getElementById('modalClose');
+    if (modalClose) modalClose.onclick = () => document.getElementById('modal').classList.remove('active');
 
-    // モーダル表示
-    document.getElementById('wishDoneModal').classList.add('active');
-}
+    const monthlyModalClose = document.getElementById('monthlyModalClose');
+    if (monthlyModalClose) monthlyModalClose.onclick = () => document.getElementById('monthlyModal').classList.remove('active');
 
-// 閉じるボタンのイベント設定（DOMContentLoaded内に追加）
-document.getElementById('wishDoneClose').addEventListener('click', () => {
-    document.getElementById('wishDoneModal').classList.remove('active');
-});
-function updateStarsRange(val) {
-    // ID名を「starValueRange」にしました。
-    const valueDisplay = document.getElementById('starValueRange');
-    if (valueDisplay) {
-        // 数値を小数点1ケタ（例：3.0, 4.5）で表示する
-        valueDisplay.textContent = parseFloat(val).toFixed(1);
+    const wishDoneClose = document.getElementById('wishDoneClose');
+    if (wishDoneClose) wishDoneClose.onclick = () => document.getElementById('wishDoneModal').classList.remove('active');
+
+    const addWishClose = document.getElementById('addWishClose');
+    if (addWishClose) addWishClose.onclick = () => document.getElementById('addWishModal').classList.remove('active');
+
+    // ★追加: Wishlist追加ボタンでモーダルを開く
+    const openAddWishBtn = document.getElementById('openAddWishBtn');
+    if (openAddWishBtn) {
+        openAddWishBtn.onclick = () => {
+            document.getElementById('newTitle').value = '';
+            document.getElementById('newCreator').value = '';
+            document.getElementById('newMemo').value = '';
+            document.getElementById('newLink').value = '';
+            document.getElementById('addWishModal').classList.add('active');
+        };
     }
-}
 
-// wishlist 追加ボタンをクリックでモーダルを開く
-document.getElementById('openAddWishBtn').onclick = () => {
-    // フォームをリセット
-    document.getElementById('newTitle').value = '';
-    document.getElementById('newCreator').value = '';
-    document.getElementById('newMemo').value = '';
-    document.getElementById('newLink').value = '';
-    document.getElementById('addWishModal').classList.add('active');
-};
+    // ★追加: 「Wishlistに追加する」送信ボタンの処理
+    const submitAddWishBtn = document.getElementById('submitAddWishBtn');
+    if (submitAddWishBtn) {
+        submitAddWishBtn.addEventListener('click', async () => {
+            const title = document.getElementById('newTitle').value;
+            if(!title) return alert("タイトルを入力してください");
+            
+            const data = {
+                action: 'addWishlist',
+                type: document.querySelector('input[name="newType"]:checked').value,
+                title: title,
+                creator: document.getElementById('newCreator').value,
+                memo: document.getElementById('newMemo').value,
+                link: document.getElementById('newLink').value
+            };
+            
+            submitAddWishBtn.textContent = "保存中...";
+            submitAddWishBtn.disabled = true;
+            await sendToGAS(data, submitAddWishBtn, "Wishlistに追加する");
+        });
+    }
 
-// 閉じるボタン
-document.getElementById('addWishClose').onclick = () => {
-    document.getElementById('addWishModal').classList.remove('active');
-};
+    // ★追加: 「この内容で記録に保存する（読了・昇格）」送信ボタンの処理
+    const submitDoneBtn = document.getElementById('submitDoneBtn');
+    if (submitDoneBtn) {
+        submitDoneBtn.addEventListener('click', async () => {
+            const data = {
+                action: 'promoteToLog',
+                title: document.getElementById('wishDoneItemName').textContent,
+                type: currentTargetType,
+                creator: currentTargetCreator,
+                date: document.getElementById('doneDate').value.replace(/-/g, '/'),
+                rating: document.getElementById('ratingRange').value,
+                review: document.getElementById('doneMemo').value
+            };
+
+            submitDoneBtn.textContent = "保存中...";
+            submitDoneBtn.disabled = true;
+            await sendToGAS(data, submitDoneBtn, "この内容で記録に保存する");
+        });
+    }
+});
