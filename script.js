@@ -27,7 +27,7 @@ const genreColors = {
 const extraColors = ['#b9fbc0', '#fbf8cc', '#fde4cf', '#ffcfd2', '#f1c0e8', '#cfbaf0', '#a3c4f3', '#90dbf4', '#8eecf5', '#98f5e1'];
 
 // あなたのGAS URL
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbz06FtcQcJxdaU4bYnLurFYwFq82HCyQDKS_Sm1CjweXX5I0r-IFL7eb13_6Z9x1w4_/exec';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwRewChtzrow2WHE1PjgZc-ofEOowhbh6Ko64YD0hLbZUzNGb-sZNs4adV-W874K6WS/exec';
 
 // --- 1. 統計・グラフ描画関数 ---
 
