@@ -569,7 +569,11 @@ function openWishDoneModal(title, type) {
 document.getElementById('wishDoneClose').addEventListener('click', () => {
     document.getElementById('wishDoneModal').classList.remove('active');
 });
-function updateStars(val) {
-    // 数値を小数点1ケタで表示するだけにする
-    document.getElementById('starValue').textContent = parseFloat(val).toFixed(1);
+function updateStarsRange(val) {
+    // ID名を「starValueRange」にしました。
+    const valueDisplay = document.getElementById('starValueRange');
+    if (valueDisplay) {
+        // 数値を小数点1ケタ（例：3.0, 4.5）で表示する
+        valueDisplay.textContent = parseFloat(val).toFixed(1);
+    }
 }
