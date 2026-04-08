@@ -159,6 +159,39 @@
 	<!--wishlist-->
 	<div id="wishlistTab" class="tab-content">
     <div id="wishlistGrid" class="wish-grid"></div>
+    <button id="openAddWishBtn" class="fab-btn">＋</button>
+	</div>
+	
+	<div id="addWishModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3>✨ 気になるものを追加</h3>
+            <button class="modal-close" id="addWishClose">×</button>
+        </div>
+        <div class="wish-done-body" style="padding: 20px;">
+            <label>カテゴリー</label>
+            <div class="type-selector">
+                <input type="radio" id="typeBook" name="newType" value="book" checked>
+                <label for="typeBook">📖 Book</label>
+                <input type="radio" id="typeMovie" name="newType" value="movie">
+                <label for="typeMovie">🎬 Movie</label>
+            </div>
+
+            <label for="newTitle">タイトル</label>
+            <input type="text" id="newTitle" class="wish-done-input" placeholder="作品名を入力...">
+
+            <label for="newCreator">著者・監督</label>
+            <input type="text" id="newCreator" class="wish-done-input" placeholder="名前を入力...">
+
+            <label for="newMemo">メモ</label>
+            <textarea id="newMemo" rows="3" class="wish-done-input" placeholder="なぜ気になった？"></textarea>
+
+            <label for="newLink">リンク (任意)</label>
+            <input type="url" id="newLink" class="wish-done-input" placeholder="Amazonや公式サイトのURL">
+
+            <button id="submitAddWishBtn" class="submit-btn">Wishlistに追加する</button>
+        </div>
+    </div>
 	</div>
 	
 	<div id="wishDoneModal" class="modal">

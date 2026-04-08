@@ -552,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// 読了登録モーダルを開く
+// wishlist 読了登録モーダルを開く
 function openWishDoneModal(title, type) {
     // フォームをリセット
     document.getElementById('wishDoneItemName').textContent = title;
@@ -577,3 +577,18 @@ function updateStarsRange(val) {
         valueDisplay.textContent = parseFloat(val).toFixed(1);
     }
 }
+
+// wishlist 追加ボタンをクリックでモーダルを開く
+document.getElementById('openAddWishBtn').onclick = () => {
+    // フォームをリセット
+    document.getElementById('newTitle').value = '';
+    document.getElementById('newCreator').value = '';
+    document.getElementById('newMemo').value = '';
+    document.getElementById('newLink').value = '';
+    document.getElementById('addWishModal').classList.add('active');
+};
+
+// 閉じるボタン
+document.getElementById('addWishClose').onclick = () => {
+    document.getElementById('addWishModal').classList.remove('active');
+};
