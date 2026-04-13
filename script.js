@@ -218,8 +218,7 @@ function showMonthlyDetail(year, monthIdx) {
     if (!container) return;
 
     container.innerHTML = targets.map(item => {
-        const typePath = item.type === 'book' ? 'book' : 'movie';
-        const coverPath = `img/${typePath}/${item.coverUrl}`;
+        const coverPath = item.coverUrl; // 修正箇所
         const dataType = item.type === 'book' ? 'books' : 'movies';
         const escapedTitle = item.title.replace(/'/g, "\\'");
 
@@ -308,8 +307,7 @@ function updateDisplay(type) {
 
     grid.innerHTML = filtered.map(item => `
         <div class="book-card" onclick="openModal('${type}', '${item.title.replace(/'/g, "\\'")}')">
-            <img src="img/${type === 'books' ? 'book' : 'movie'}/${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">
-            <div class="book-info">
+            <img src="${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'"> <div class="book-info">
                 <div class="book-title">${item.title}</div>
                 <div class="book-author">${item.creator || ""}</div>
                 <div class="book-date">${formatJSTDate(item.date)}</div>
@@ -405,7 +403,7 @@ function openModal(type, title) {
 
     document.getElementById('modalDate').textContent = formatJSTDate(item.date);
     document.getElementById('modalRating').innerHTML = generateStars(item.rating);
-    document.getElementById('modalCover').innerHTML = `<img src="img/${type === 'books' ? 'book' : 'movie'}/${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">`;
+    document.getElementById('modalCover').innerHTML = `<img src="${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">`; // 修正箇所
     document.getElementById('modalReview').innerHTML = (item.review || "").replace(/\n/g, '<br>');
     document.getElementById('modalSynopsis').textContent = item.synopsis || "記載なし";
     document.getElementById('modalTags').innerHTML = (item.tags || "").split(',').map(t => {
@@ -440,7 +438,7 @@ function renderTimeline() {
         }
 
         const onClick = `openModal('${type === 'book' ? 'books' : 'movies'}', '${item.title.replace(/'/g, "\\'")}')`;
-        const coverPath = `img/${type === 'book' ? 'book' : 'movie'}/${item.coverUrl}`;
+        const coverPath = item.coverUrl; // 修正箇所
 
         html += `
             <div class="timeline-card" onclick="${onClick}" style="margin-bottom: ${extraMargin}px;">
