@@ -1,4 +1,4 @@
-/**
+﻿// JavaScript Document/**
  * 読書・映画記録 完全版
  */
 let booksData = [];
@@ -12,7 +12,7 @@ let genreChart = null;
 let myYearlyChart = null; 
 let currentYear = "all"; 
 
-// ★追加：Wishlistから昇格する際の一時保存用変数
+// Wishlistから昇格する際の一時保存用変数
 let currentTargetType = "";
 let currentTargetCreator = "";
 
@@ -218,7 +218,7 @@ function showMonthlyDetail(year, monthIdx) {
     if (!container) return;
 
     container.innerHTML = targets.map(item => {
-        const coverPath = item.coverUrl; // 修正箇所
+        const coverPath = item.coverUrl; 
         const dataType = item.type === 'book' ? 'books' : 'movies';
         const escapedTitle = item.title.replace(/'/g, "\\'");
 
@@ -247,7 +247,8 @@ async function loadAppData() {
     const TIME_KEY = 'appData_time';
     const cachedData = localStorage.getItem(CACHE_KEY);
     const cachedTime = localStorage.getItem(TIME_KEY);
-    const isExpired = !cachedTime || (Date.now() - cachedTime > 60000); // 1分キャッシュ
+    // 開発中や頻繁に更新する場合はキャッシュ時間を短く（または無効に）してもOKです
+    const isExpired = !cachedTime || (Date.now() - cachedTime > 60000); 
 
     if (cachedData && !isExpired) {
         renderData(JSON.parse(cachedData));
@@ -307,7 +308,8 @@ function updateDisplay(type) {
 
     grid.innerHTML = filtered.map(item => `
         <div class="book-card" onclick="openModal('${type}', '${item.title.replace(/'/g, "\\'")}')">
-            <img src="${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'"> <div class="book-info">
+            <img src="${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">
+            <div class="book-info">
                 <div class="book-title">${item.title}</div>
                 <div class="book-author">${item.creator || ""}</div>
                 <div class="book-date">${formatJSTDate(item.date)}</div>
@@ -403,7 +405,7 @@ function openModal(type, title) {
 
     document.getElementById('modalDate').textContent = formatJSTDate(item.date);
     document.getElementById('modalRating').innerHTML = generateStars(item.rating);
-    document.getElementById('modalCover').innerHTML = `<img src="${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">`; // 修正箇所
+    document.getElementById('modalCover').innerHTML = `<img src="${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">`;
     document.getElementById('modalReview').innerHTML = (item.review || "").replace(/\n/g, '<br>');
     document.getElementById('modalSynopsis').textContent = item.synopsis || "記載なし";
     document.getElementById('modalTags').innerHTML = (item.tags || "").split(',').map(t => {
@@ -438,7 +440,7 @@ function renderTimeline() {
         }
 
         const onClick = `openModal('${type === 'book' ? 'books' : 'movies'}', '${item.title.replace(/'/g, "\\'")}')`;
-        const coverPath = item.coverUrl; // 修正箇所
+        const coverPath = item.coverUrl;
 
         html += `
             <div class="timeline-card" onclick="${onClick}" style="margin-bottom: ${extraMargin}px;">
@@ -472,7 +474,6 @@ function renderWishlist() {
         const typeLabel = item.type === 'book' ? 'Book' : 'Movie';
         const stickyColor = item.type === 'book' ? '#fff9c4' : '#ffd1dc';
         
-        // ★修正: 引数に creator を追加し、タイトル等のクォーテーションをエスケープ
         const safeTitle = item.title.replace(/'/g, "\\'");
         const safeCreator = (item.creator || '').replace(/'/g, "\\'");
 
@@ -491,7 +492,6 @@ function renderWishlist() {
 
 // --- 4. モーダル操作系 ---
 
-// ★修正: wishlist 読了登録モーダルを開く（creatorを追加で受け取る）
 function openWishDoneModal(title, type, creator) {
     currentTargetType = type;
     currentTargetCreator = creator;
@@ -500,7 +500,6 @@ function openWishDoneModal(title, type, creator) {
     document.getElementById('doneDate').value = new Date().toLocaleDateString('sv-SE'); 
     document.getElementById('doneMemo').value = '';
     
-    // ★修正: 古いラジオボタンのリセットを消し、スライダーを3.0にリセットする処理
     const ratingRange = document.getElementById('ratingRange');
     if (ratingRange) {
         ratingRange.value = "3.0";
@@ -510,7 +509,6 @@ function openWishDoneModal(title, type, creator) {
     document.getElementById('wishDoneModal').classList.add('active');
 }
 
-// スライダー横の数字を更新
 function updateStarsRange(val) {
     const valueDisplay = document.getElementById('starValueRange');
     if (valueDisplay) {
@@ -528,7 +526,6 @@ async function sendToGAS(data, btnElement, originalText) {
         });
         if (response.ok) {
             alert('保存完了しました！');
-            // 古いキャッシュを消して、最新のデータを読み込み直す
             localStorage.removeItem('appData_cache');
             localStorage.removeItem('appData_time');
             location.reload(); 
@@ -596,7 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addWishClose = document.getElementById('addWishClose');
     if (addWishClose) addWishClose.onclick = () => document.getElementById('addWishModal').classList.remove('active');
 
-    // ★追加: Wishlist追加ボタンでモーダルを開く
+    // Wishlist追加ボタンでモーダルを開く
     const openAddWishBtn = document.getElementById('openAddWishBtn');
     if (openAddWishBtn) {
         openAddWishBtn.onclick = () => {
@@ -608,7 +605,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // ★追加: 「Wishlistに追加する」送信ボタンの処理
+    // 「Wishlistに追加する」送信ボタンの処理
     const submitAddWishBtn = document.getElementById('submitAddWishBtn');
     if (submitAddWishBtn) {
         submitAddWishBtn.addEventListener('click', async () => {
@@ -630,7 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ★追加: 「この内容で記録に保存する（読了・昇格）」送信ボタンの処理
+    // 「この内容で記録に保存する（読了・昇格）」送信ボタンの処理
     const submitDoneBtn = document.getElementById('submitDoneBtn');
     if (submitDoneBtn) {
         submitDoneBtn.addEventListener('click', async () => {
