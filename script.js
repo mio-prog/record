@@ -1,6 +1,6 @@
 ﻿// JavaScript Document/**
- * 読書・映画記録 完全版
- */
+// * 読書・映画記録 完全版
+//
 let booksData = [];
 let moviesData = [];
 let wishlistData = [];
