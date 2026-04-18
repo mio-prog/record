@@ -40,6 +40,15 @@ const extraColors = ['#b9fbc0', '#fbf8cc', '#fde4cf', '#ffcfd2', '#f1c0e8', '#cf
 // あなたのGAS URL
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwRewChtzrow2WHE1PjgZc-ofEOowhbh6Ko64YD0hLbZUzNGb-sZNs4adV-W874K6WS/exec';
 
+// デバウンス：連続入力の最後から指定ms後に関数を実行する
+function debounce(fn, ms) {
+    let timer;
+    return function(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), ms);
+    };
+}
+
 // ============================================================
 // 1. 統計・グラフ描画関数
 // ============================================================
@@ -375,14 +384,23 @@ function renderModalViewMode(item, type) {
     }).join('');
     document.getElementById('modalEditBtn').style.display = 'inline-flex';
     document.getElementById('modalSaveBtn').style.display = 'none';
+    document.getElementById('modalDeleteBtn').style.display = 'inline-flex';
+    document.getElementById('deleteConfirmArea').style.display = 'none';
     setModalEditMode(false);
 }
 
 function setModalEditMode(isEdit) {
+    // 中身の要素を切り替え
     ['modalDate','modalRating','modalReview','modalSynopsis'].forEach(id => {
         document.getElementById(id).style.display = isEdit ? 'none' : 'block';
     });
     document.getElementById('modalTags').style.display = isEdit ? 'none' : 'flex';
+
+    // 感想・あらすじ・タグのセクション（見出し含む）をまとめて切り替え
+    document.querySelectorAll('#modal .modal-section').forEach(section => {
+        section.style.display = isEdit ? 'none' : 'block';
+    });
+
     document.getElementById('editFieldsArea').style.display = isEdit ? 'block' : 'none';
     document.getElementById('modalEditBtn').style.display = isEdit ? 'none' : 'inline-flex';
     document.getElementById('modalSaveBtn').style.display = isEdit ? 'inline-flex' : 'none';
@@ -444,6 +462,115 @@ async function saveEditedItem() {
         review: document.getElementById('editReview').value
     };
     await sendToGAS(data, saveBtn, '💾 保存');
+}
+
+function openDeleteConfirm() {
+    // 編集モードを閉じて削除確認を表示
+    setModalEditMode(false);
+    document.getElementById('editFieldsArea').style.display = 'none';
+    document.getElementById('modalEditBtn').style.display = 'none';
+    document.getElementById('modalDeleteBtn').style.display = 'none';
+
+    document.getElementById('deleteConfirmTitle').textContent = `「${editingItem.title}」`;
+    document.getElementById('deleteConfirmArea').style.display = 'block';
+
+    // modal-bodyも隠す
+    document.querySelector('#modal .modal-body').style.display = 'none';
+}
+
+function cancelDelete() {
+    document.getElementById('deleteConfirmArea').style.display = 'none';
+    document.getElementById('modalEditBtn').style.display = 'inline-flex';
+    document.getElementById('modalDeleteBtn').style.display = 'inline-flex';
+    document.querySelector('#modal .modal-body').style.display = 'block';
+}
+
+async function executeDelete() {
+    if (!editingItem) return;
+    const btn = document.getElementById('deleteExecuteBtn');
+    btn.textContent = '削除中...';
+    btn.disabled = true;
+    const data = {
+        action: 'deleteLog',
+        title: editingItem.title,
+        type: editingType === 'books' ? 'book' : 'movie'
+    };
+    await sendToGAS(data, btn, '削除する');
+}
+
+// ============================================================
+// Wishlist追加モーダル：検索補完
+// ============================================================
+
+let wishSelectedCandidate = null;
+
+function openAddWishModal() {
+    wishSelectedCandidate = null;
+    document.getElementById('wishTypeBook').checked = true;
+    document.getElementById('wishSearchInput').value = '';
+    document.getElementById('wishSearchStatus').style.display = 'none';
+    document.getElementById('wishCandidates').innerHTML = '';
+    document.getElementById('newMemo').value = '';
+    document.getElementById('newLink').value = '';
+    document.getElementById('newMemoManual').value = '';
+    document.getElementById('newLinkManual').value = '';
+    document.getElementById('newTitleManual').value = '';
+    document.getElementById('newCreatorManual').value = '';
+    document.getElementById('addWishStep1').style.display = 'block';
+    document.getElementById('addWishStep2').style.display = 'none';
+    document.getElementById('addWishStep2Manual').style.display = 'none';
+    document.getElementById('addWishModal').classList.add('active');
+
+    // Enterキー検索 + インクリメンタルサーチ（1秒デバウンス）
+    const input = document.getElementById('wishSearchInput');
+    input.onkeydown = (e) => { if (e.key === 'Enter') executeWishSearch(); };
+    input.oninput = debounce(() => executeWishSearch(), 1000);
+}
+
+async function executeWishSearch() {
+    const query = document.getElementById('wishSearchInput').value.trim();
+    if (!query) return;
+    const type = document.querySelector('input[name="wishType"]:checked').value;
+    const statusEl = document.getElementById('wishSearchStatus');
+    const candidatesEl = document.getElementById('wishCandidates');
+
+    statusEl.innerHTML = '<span class="search-spinner"></span> 検索中...';
+    statusEl.style.display = 'block';
+    candidatesEl.innerHTML = '';
+
+    try {
+        const url = `${SHEET_URL}?action=search&type=${encodeURIComponent(type)}&q=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const results = data.results || [];
+
+        if (results.length === 0) {
+            statusEl.textContent = '候補が見つかりませんでした。直接入力で追加できます。';
+            return;
+        }
+        statusEl.style.display = 'none';
+        candidatesEl.innerHTML = results.map(c =>
+            buildCandidateCard(c, `selectWishCandidate(${JSON.stringify(c).replace(/"/g, '&quot;')})`)
+        ).join('');
+    } catch (err) {
+        statusEl.textContent = '検索に失敗しました。直接入力でも追加できます。';
+    }
+}
+
+function selectWishCandidate(candidate) {
+    wishSelectedCandidate = candidate;
+    document.getElementById('addWishStep1').style.display = 'none';
+    document.getElementById('addWishStep2').style.display = 'block';
+    const selectedEl = document.getElementById('wishSelectedInfo');
+    if (selectedEl) selectedEl.innerHTML = buildSelectedInfo(candidate);
+}
+
+function showWishManualInput() {
+    // 検索ボックスに入力中のタイトルをそのまま手動入力欄に引き継ぐ
+    const typed = document.getElementById('wishSearchInput').value.trim();
+    document.getElementById('newTitleManual').value = typed;
+    document.getElementById('addWishStep1').style.display = 'none';
+    document.getElementById('addWishStep2Manual').style.display = 'block';
 }
 
 // ============================================================
@@ -564,7 +691,11 @@ function openAddLogModal(type) {
     document.getElementById('addLogStep1').style.display = 'block';
     document.getElementById('addLogStep2').style.display = 'none';
     document.getElementById('addLogModal').classList.add('active');
-    document.getElementById('addLogSearchInput').onkeydown = (e) => { if (e.key === 'Enter') executeAddLogSearch(); };
+
+    // Enterキー検索 + インクリメンタルサーチ（1秒デバウンス）
+    const input = document.getElementById('addLogSearchInput');
+    input.onkeydown = (e) => { if (e.key === 'Enter') executeAddLogSearch(); };
+    input.oninput = debounce(() => executeAddLogSearch(), 1000);
 }
 
 async function executeAddLogSearch() {
@@ -572,7 +703,7 @@ async function executeAddLogSearch() {
     if (!query) return;
     const statusEl = document.getElementById('addLogSearchStatus');
     const candidatesEl = document.getElementById('addLogCandidates');
-    statusEl.textContent = '🔍 検索中...';
+    statusEl.innerHTML = '<span class="search-spinner"></span> 検索中...';
     statusEl.style.display = 'block';
     candidatesEl.innerHTML = '';
     try {
@@ -734,9 +865,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addWishClose')?.addEventListener('click', () => document.getElementById('addWishModal').classList.remove('active'));
     document.getElementById('addLogClose')?.addEventListener('click', () => document.getElementById('addLogModal').classList.remove('active'));
 
-    // 詳細モーダルの編集・保存ボタン
+    // 詳細モーダルの編集・保存・削除ボタン
     document.getElementById('modalEditBtn')?.addEventListener('click', openEditMode);
     document.getElementById('modalSaveBtn')?.addEventListener('click', saveEditedItem);
+    document.getElementById('modalDeleteBtn')?.addEventListener('click', openDeleteConfirm);
+    document.getElementById('deleteCancelBtn')?.addEventListener('click', cancelDelete);
+    document.getElementById('deleteExecuteBtn')?.addEventListener('click', executeDelete);
 
     // Books/Movies追加ボタン
     document.getElementById('openAddBookBtn')?.addEventListener('click', () => openAddLogModal('book'));
@@ -771,24 +905,58 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Wishlist追加ボタン
-    document.getElementById('openAddWishBtn')?.addEventListener('click', () => {
-        ['newTitle','newCreator','newMemo','newLink'].forEach(id => document.getElementById(id).value = '');
-        document.getElementById('addWishModal').classList.add('active');
+    document.getElementById('openAddWishBtn')?.addEventListener('click', openAddWishModal);
+    document.getElementById('wishSearchBtn')?.addEventListener('click', executeWishSearch);
+
+    // Wishlist追加：選び直し
+    document.getElementById('wishResearchBtn')?.addEventListener('click', () => {
+        wishSelectedCandidate = null;
+        document.getElementById('addWishStep1').style.display = 'block';
+        document.getElementById('addWishStep2').style.display = 'none';
+        document.getElementById('wishCandidates').innerHTML = '';
+        document.getElementById('wishSearchStatus').style.display = 'none';
     });
 
+    // Wishlist追加：手動入力へ
+    document.getElementById('wishSkipSearchBtn')?.addEventListener('click', showWishManualInput);
+
+    // Wishlist追加：手動入力から検索に戻る
+    document.getElementById('wishBackToSearchBtn')?.addEventListener('click', () => {
+        document.getElementById('addWishStep2Manual').style.display = 'none';
+        document.getElementById('addWishStep1').style.display = 'block';
+    });
+
+    // Wishlist追加：検索経由で送信
     document.getElementById('submitAddWishBtn')?.addEventListener('click', async () => {
-        const title = document.getElementById('newTitle').value;
-        if (!title) return alert("タイトルを入力してください");
+        if (!wishSelectedCandidate) return alert('作品を選択してください');
         const data = {
             action: 'addWishlist',
-            type: document.querySelector('input[name="newType"]:checked').value,
-            title, creator: document.getElementById('newCreator').value,
+            type: document.querySelector('input[name="wishType"]:checked').value,
+            title: wishSelectedCandidate.title,
+            creator: wishSelectedCandidate.creator || '',
             memo: document.getElementById('newMemo').value,
             link: document.getElementById('newLink').value
         };
         const btn = document.getElementById('submitAddWishBtn');
-        btn.textContent = "保存中..."; btn.disabled = true;
-        await sendToGAS(data, btn, "Wishlistに追加する");
+        btn.textContent = '保存中...'; btn.disabled = true;
+        await sendToGAS(data, btn, 'Wishlistに追加する');
+    });
+
+    // Wishlist追加：手動入力で送信
+    document.getElementById('submitAddWishManualBtn')?.addEventListener('click', async () => {
+        const title = document.getElementById('newTitleManual').value.trim();
+        if (!title) return alert('タイトルを入力してください');
+        const data = {
+            action: 'addWishlist',
+            type: document.querySelector('input[name="wishType"]:checked').value,
+            title,
+            creator: document.getElementById('newCreatorManual').value,
+            memo: document.getElementById('newMemoManual').value,
+            link: document.getElementById('newLinkManual').value
+        };
+        const btn = document.getElementById('submitAddWishManualBtn');
+        btn.textContent = '保存中...'; btn.disabled = true;
+        await sendToGAS(data, btn, 'Wishlistに追加する');
     });
 
     document.getElementById('submitDoneBtn')?.addEventListener('click', async () => {
@@ -802,7 +970,6 @@ document.addEventListener('DOMContentLoaded', () => {
             review: document.getElementById('doneMemo').value,
             externalId: selectedCandidate ? selectedCandidate.externalId : ''
         };
-
         const btn = document.getElementById('submitDoneBtn');
         btn.textContent = '保存中... (AIが情報を生成しています)'; btn.disabled = true;
         await sendToGAS(data, btn, "この内容で記録に保存する");

@@ -67,10 +67,6 @@
         <div class="modal-content" id="modalContent">
             <button class="modal-close" id="modalClose">×</button>
 
-            <!-- 編集・保存ボタン（右上） -->
-            <button class="modal-edit-btn" id="modalEditBtn">✏️ 編集</button>
-            <button class="modal-save-btn" id="modalSaveBtn" style="display:none;">💾 保存</button>
-
             <div class="modal-header">
                 <div class="modal-cover" id="modalCover"></div>
                 <div class="modal-basic-info">
@@ -78,6 +74,24 @@
                     <div class="modal-author" id="modalAuthor"></div>
                     <div class="modal-date" id="modalDate"></div>
                     <div class="modal-rating" id="modalRating"></div>
+                </div>
+            </div>
+
+            <!-- 編集・保存ボタンバー（ヘッダーの直下） -->
+            <div class="modal-action-bar">
+                <button class="modal-edit-btn" id="modalEditBtn">✏️ 編集</button>
+                <button class="modal-save-btn" id="modalSaveBtn" style="display:none;">💾 保存</button>
+                <button class="modal-delete-btn" id="modalDeleteBtn">🗑️ 削除</button>
+            </div>
+
+            <!-- 削除確認エリア（初期非表示） -->
+            <div id="deleteConfirmArea" style="display:none;">
+                <div class="delete-confirm-box">
+                    <p class="delete-confirm-text">本当に削除しますか？<br><span id="deleteConfirmTitle"></span></p>
+                    <div class="delete-confirm-buttons">
+                        <button id="deleteCancelBtn" class="delete-cancel-btn">キャンセル</button>
+                        <button id="deleteExecuteBtn" class="delete-execute-btn">削除する</button>
+                    </div>
                 </div>
             </div>
 
@@ -146,28 +160,69 @@
 
     <!-- Wishlist新規追加モーダル -->
     <div id="addWishModal" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <div class="modal-header">
+        <div class="modal-content" style="max-width: 440px;">
+            <button class="modal-close" id="addWishClose">×</button>
+            <div class="modal-header" style="margin-bottom: 0;">
                 <h3>✨ 気になるものを追加</h3>
-                <button class="modal-close" id="addWishClose">×</button>
             </div>
-            <div class="wish-done-body" style="padding: 20px;">
-                <label>カテゴリー</label>
-                <div class="type-selector">
-                    <input type="radio" id="typeBook" name="newType" value="book" checked>
-                    <label for="typeBook">📖 Book</label>
-                    <input type="radio" id="typeMovie" name="newType" value="movie">
-                    <label for="typeMovie">🎬 Movie</label>
+            <div style="padding: 20px;">
+                <!-- カテゴリー選択 -->
+                <label style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #666;">カテゴリー</label>
+                <div class="type-selector" style="margin-bottom: 16px;">
+                    <input type="radio" id="wishTypeBook" name="wishType" value="book" checked>
+                    <label for="wishTypeBook">📖 Book</label>
+                    <input type="radio" id="wishTypeMovie" name="wishType" value="movie">
+                    <label for="wishTypeMovie">🎬 Movie</label>
                 </div>
-                <label for="newTitle">タイトル</label>
-                <input type="text" id="newTitle" class="wish-done-input" placeholder="作品名を入力...">
-                <label for="newCreator">著者・監督</label>
-                <input type="text" id="newCreator" class="wish-done-input" placeholder="名前を入力...">
-                <label for="newMemo">メモ</label>
-                <textarea id="newMemo" rows="3" class="wish-done-input" placeholder="なぜ気になった？"></textarea>
-                <label for="newLink">リンク (任意)</label>
-                <input type="url" id="newLink" class="wish-done-input" placeholder="AmazonやオフィシャルサイトのURL">
-                <button id="submitAddWishBtn" class="submit-btn">Wishlistに追加する</button>
+
+                <!-- STEP 1: タイトル検索 -->
+                <div id="addWishStep1">
+                    <label style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #666;">タイトルで検索</label>
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <input type="text" id="wishSearchInput" class="wish-done-input"
+                               placeholder="タイトルを入力..." style="margin-bottom:0; flex:1;">
+                        <button id="wishSearchBtn" class="search-execute-btn">検索</button>
+                    </div>
+                    <div id="wishSearchStatus" class="search-status" style="display:none;"></div>
+                    <div id="wishCandidates" class="candidates-grid" style="margin-top: 12px;"></div>
+
+                    <!-- 検索せず手動入力で進む場合 -->
+                    <button id="wishSkipSearchBtn" class="reselect-btn" style="margin-top: 10px;">
+                        ✏️ タイトルを直接入力して追加する
+                    </button>
+                </div>
+
+                <!-- STEP 2: 確認・メモ入力 -->
+                <div id="addWishStep2" style="display:none;">
+                    <div id="wishSelectedInfo" class="selected-info" style="margin-bottom: 12px;"></div>
+                    <button id="wishResearchBtn" class="reselect-btn">🔄 別の作品を選び直す</button>
+
+                    <label style="display:block; margin: 14px 0 5px; font-size: 0.9rem; color: #666;">メモ（なぜ気になった？）</label>
+                    <textarea id="newMemo" rows="3" class="wish-done-input" placeholder="なぜ気になった？"></textarea>
+
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">リンク（任意）</label>
+                    <input type="url" id="newLink" class="wish-done-input" placeholder="AmazonやオフィシャルサイトのURL">
+
+                    <button id="submitAddWishBtn" class="submit-btn">Wishlistに追加する</button>
+                </div>
+
+                <!-- STEP 2b: 手動入力 -->
+                <div id="addWishStep2Manual" style="display:none;">
+                    <label style="display:block; margin-bottom: 5px; font-size: 0.9rem; color: #666;">タイトル</label>
+                    <input type="text" id="newTitleManual" class="wish-done-input" placeholder="作品名を入力...">
+
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">著者・監督</label>
+                    <input type="text" id="newCreatorManual" class="wish-done-input" placeholder="名前を入力...">
+
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">メモ</label>
+                    <textarea id="newMemoManual" rows="3" class="wish-done-input" placeholder="なぜ気になった？"></textarea>
+
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">リンク（任意）</label>
+                    <input type="url" id="newLinkManual" class="wish-done-input" placeholder="AmazonやオフィシャルサイトのURL">
+
+                    <button id="wishBackToSearchBtn" class="reselect-btn">🔍 検索に戻る</button>
+                    <button id="submitAddWishManualBtn" class="submit-btn">Wishlistに追加する</button>
+                </div>
             </div>
         </div>
     </div>

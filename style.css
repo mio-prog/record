@@ -125,23 +125,19 @@ header h1 { font-size: 32px; margin-bottom: 20px; }
 /* ============================================================
    詳細モーダルの編集・保存ボタン
    ============================================================ */
+/* 編集・保存ボタン：モーダルヘッダーの下に横並びで配置 */
 .modal-edit-btn,
 .modal-save-btn {
-    position: absolute;
-    top: 12px;
-    /* 閉じる(×)ボタンの左隣に配置 */
-    right: 52px;
-    padding: 5px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 16px;
     border: none;
     border-radius: 16px;
     font-size: 13px;
     font-weight: bold;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
     transition: opacity 0.2s;
-    z-index: 10;
 }
 .modal-edit-btn {
     background: #f0f4ff;
@@ -157,6 +153,84 @@ header h1 { font-size: 32px; margin-bottom: 20px; }
 .modal-save-btn:hover { opacity: 0.85; }
 .modal-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ボタンを包むラッパー */
+.modal-action-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+/* 削除ボタン */
+.modal-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 16px;
+    border: 1px solid #fcc;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #fff5f5;
+    color: #e53935;
+    transition: opacity 0.2s;
+    margin-left: auto;
+}
+.modal-delete-btn:hover { opacity: 0.8; }
+
+/* 削除確認ボックス */
+.delete-confirm-box {
+    background: #fff5f5;
+    border: 1.5px solid #ffcdd2;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    text-align: center;
+}
+.delete-confirm-text {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 14px;
+    line-height: 1.6;
+}
+.delete-confirm-text span {
+    font-weight: bold;
+    color: #333;
+}
+.delete-confirm-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+.delete-cancel-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    color: #666;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.delete-cancel-btn:hover { background: #f5f5f5; }
+.delete-execute-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #e53935;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.delete-execute-btn:hover { opacity: 0.85; }
+.delete-execute-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ============================================================
    編集フィールド
    ============================================================ */
@@ -166,6 +240,7 @@ header h1 { font-size: 32px; margin-bottom: 20px; }
     background: #f8f9ff;
     border-radius: 12px;
     border: 1px solid #e0e6ff;
+    overflow: hidden; /* はみ出し防止 */
 }
 
 .edit-field-group {
@@ -190,6 +265,7 @@ header h1 { font-size: 32px; margin-bottom: 20px; }
 
 .edit-input {
     width: 100%;
+    max-width: 100%;
     padding: 9px 12px;
     border: 1px solid #dde;
     border-radius: 8px;
@@ -366,7 +442,22 @@ header h1 { font-size: 32px; margin-bottom: 20px; }
 /* ============================================================
    候補カード・検索UI
    ============================================================ */
-.search-status { font-size: 0.85rem; color: #888; text-align: center; padding: 8px 0; }
+.search-status { font-size: 0.85rem; color: #888; text-align: center; padding: 8px 0; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+/* 検索中スピナー */
+.search-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #ddd;
+    border-top-color: #764ba2;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
 
 .search-execute-btn {
     padding: 12px 20px;
