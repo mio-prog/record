@@ -20,6 +20,13 @@ let currentTargetCreator = "";
 let selectedCandidate = null;
 let addLogType = "book";
 
+// 編集モード用：現在編集中のアイテム
+let editingItem = null;
+let editingType = "";
+
+const BOOK_GENRES = ["ビジネス","自己啓発","小説","ミステリー","SF","ファンタジー","歴史","自然科学","テクノロジー","デザイン","エッセイ","マンガ"];
+const MOVIE_GENRES = ["アニメ","アクション","コメディ","ドラマ","ホラー","SF","ファンタジー","ミステリー","サスペンス","青春","ドキュメンタリー"];
+
 const genreColors = {
     "ビジネス": "#a3c4f3",
     "自然科学": "#90dbf4",
@@ -40,46 +47,35 @@ const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwRewChtzrow2WHE1PjgZ
 function changeYear(direction) {
     const allData = [...booksData, ...moviesData];
     const availableYears = [...new Set(allData.map(item => new Date(item.date).getFullYear()))].sort();
-    
     if (currentYear === "all") {
         currentYear = direction > 0 ? availableYears[0] : availableYears[availableYears.length - 1];
     } else {
         let index = availableYears.indexOf(currentYear);
         index += direction;
-        if (index < 0 || index >= availableYears.length) {
-            currentYear = "all";
-        } else {
-            currentYear = availableYears[index];
-        }
+        if (index < 0 || index >= availableYears.length) currentYear = "all";
+        else currentYear = availableYears[index];
     }
     updateStats(); 
     renderStats();
 }
 
 function updateStats() {
-    const totalBooksEl = document.getElementById('totalBooks');
-    const totalMoviesEl = document.getElementById('totalMovies');
-    const avgRatingEl = document.getElementById('avgRating');
-    const yearDisplayEl = document.getElementById('currentYearDisplay');
-
     const allDataRaw = [...booksData, ...moviesData];
     const displayData = currentYear === "all" 
         ? allDataRaw 
         : allDataRaw.filter(item => new Date(item.date).getFullYear() === currentYear);
 
-    if (yearDisplayEl) {
-        yearDisplayEl.textContent = currentYear === "all" ? "全期間" : `${currentYear}年`;
-    }
+    const yearDisplayEl = document.getElementById('currentYearDisplay');
+    if (yearDisplayEl) yearDisplayEl.textContent = currentYear === "all" ? "全期間" : `${currentYear}年`;
     
-    const filteredBooks = displayData.filter(d => d.type === 'book');
-    const filteredMovies = displayData.filter(d => d.type === 'movie');
-
-    if (totalBooksEl) totalBooksEl.textContent = filteredBooks.length;
-    if (totalMoviesEl) totalMoviesEl.textContent = filteredMovies.length;
+    const totalBooksEl = document.getElementById('totalBooks');
+    const totalMoviesEl = document.getElementById('totalMovies');
+    const avgRatingEl = document.getElementById('avgRating');
+    if (totalBooksEl) totalBooksEl.textContent = displayData.filter(d => d.type === 'book').length;
+    if (totalMoviesEl) totalMoviesEl.textContent = displayData.filter(d => d.type === 'movie').length;
     
     const totalRating = displayData.reduce((sum, item) => sum + (parseFloat(item.rating) || 0), 0);
-    const avg = displayData.length > 0 ? (totalRating / displayData.length).toFixed(1) : "0.0";
-    if (avgRatingEl) avgRatingEl.textContent = avg;
+    if (avgRatingEl) avgRatingEl.textContent = displayData.length > 0 ? (totalRating / displayData.length).toFixed(1) : "0.0";
 
     drawGenreChart(displayData);
 }
@@ -87,44 +83,30 @@ function updateStats() {
 function drawGenreChart(dataForChart) {
     const canvas = document.getElementById('genreChart');
     if (!canvas) return;
-    
     const ctx = canvas.getContext('2d');
     const counts = {};
     dataForChart.forEach(item => {
         const g = item.genre || "未分類";
         counts[g] = (counts[g] || 0) + 1;
     });
-
     const labels = Object.keys(counts);
     const values = Object.values(counts);
     const backgroundColors = labels.map((label, index) => genreColors[label] || extraColors[index % extraColors.length]);
-
     if (genreChart !== null) genreChart.destroy();
-
     genreChart = new Chart(ctx, {
         type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: values,
-                backgroundColor: backgroundColors
-            }]
-        },
+        data: { labels, datasets: [{ data: values, backgroundColor: backgroundColors }] },
         options: {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    titleColor: '#333',
-                    bodyColor: '#333',
-                    borderColor: '#ddd',
-                    borderWidth: 1,
+                    backgroundColor: 'rgba(255,255,255,0.9)', titleColor: '#333', bodyColor: '#333',
+                    borderColor: '#ddd', borderWidth: 1,
                     callbacks: {
                         label: function(context) {
                             const value = context.parsed;
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((value / total) * 100).toFixed(1);
-                            return ` ${value}件 (${percentage}%)`;
+                            return ` ${value}件 (${((value / total) * 100).toFixed(1)}%)`;
                         }
                     }
                 }
@@ -132,15 +114,13 @@ function drawGenreChart(dataForChart) {
             cutout: '50%'
         }
     });
-
     const legendContainer = document.getElementById('customLegend');
     if (legendContainer) {
-        legendContainer.innerHTML = ''; 
+        legendContainer.innerHTML = '';
         labels.forEach((label, index) => {
-            const color = backgroundColors[index];
             const item = document.createElement('div');
             item.className = 'legend-item';
-            item.innerHTML = `<span class="legend-box" style="background:${color}"></span><span class="legend-text">${label}</span>`;
+            item.innerHTML = `<span class="legend-box" style="background:${backgroundColors[index]}"></span><span class="legend-text">${label}</span>`;
             legendContainer.appendChild(item);
         });
     }
@@ -150,29 +130,23 @@ function renderStats() {
     const yearlyCtx = document.getElementById('yearlyChart');
     if (!yearlyCtx) return;
     if (myYearlyChart) myYearlyChart.destroy();
-
     const selectedYear = parseInt(currentYear);
     if (currentYear === "all" || isNaN(selectedYear)) {
         yearlyCtx.parentElement.style.display = 'none';
-        return; 
-    } else {
-        yearlyCtx.parentElement.style.display = 'block';
+        return;
     }
-
-    const monthlyLabels = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+    yearlyCtx.parentElement.style.display = 'block';
+    const monthlyLabels = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
     const monthlyBookData = new Array(12).fill(0);
     const monthlyMovieData = new Array(12).fill(0);
-
-    const allData = [...booksData, ...moviesData];
-    allData.forEach(item => {
+    [...booksData, ...moviesData].forEach(item => {
         const d = new Date(item.date);
         if (d.getFullYear() === selectedYear) {
-            const monthIdx = d.getMonth();
-            if (item.type === 'book') monthlyBookData[monthIdx]++;
-            else if (item.type === 'movie') monthlyMovieData[monthIdx]++;
+            const idx = d.getMonth();
+            if (item.type === 'book') monthlyBookData[idx]++;
+            else if (item.type === 'movie') monthlyMovieData[idx]++;
         }
     });
-
     myYearlyChart = new Chart(yearlyCtx, {
         type: 'bar',
         data: {
@@ -183,67 +157,46 @@ function renderStats() {
             ]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { 
-                    beginAtZero: true, 
-                    min: 0, 
-                    max: 5,            
-                    ticks: { stepSize: 1 }
-                }
-            },
+            responsive: true, maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, min: 0, max: 5, ticks: { stepSize: 1 } } },
             plugins: {
                 legend: { position: 'bottom' },
                 title: { display: true, text: `${selectedYear}年 月別記録` }
             },
             onClick: (event, elements) => {
-                if (elements.length > 0) {
-                    const monthIdx = elements[0].index;
-                    showMonthlyDetail(selectedYear, monthIdx);
-                }
+                if (elements.length > 0) showMonthlyDetail(selectedYear, elements[0].index);
             }
         }
     });
 }
 
 function showMonthlyDetail(year, monthIdx) {
-    const monthName = monthIdx + 1 + "月";
     const allData = [...booksData, ...moviesData];
     const targets = allData.filter(item => {
         const d = new Date(item.date);
         return d.getFullYear() === year && d.getMonth() === monthIdx;
     }).sort((a, b) => new Date(a.date) - new Date(b.date));
-
     if (targets.length === 0) return;
 
     const titleEl = document.getElementById('monthlyModalTitle');
-    if (titleEl) titleEl.textContent = `${year}年 ${monthName} の記録`;
-    
+    if (titleEl) titleEl.textContent = `${year}年 ${monthIdx + 1}月 の記録`;
     const container = document.getElementById('monthlyListContainer');
     if (!container) return;
-
     container.innerHTML = targets.map(item => {
-        const coverPath = item.coverUrl; 
         const dataType = item.type === 'book' ? 'books' : 'movies';
         const escapedTitle = item.title.replace(/'/g, "\\'");
-
         return `
-            <div class="mini-item-card" 
-                 onclick="
-                    document.getElementById('monthlyModal').classList.remove('active'); 
-                    const tabBtn = document.querySelector('.tab-btn[data-tab=\\'${dataType}\\']');
-                    if(tabBtn) tabBtn.click();
-                    openModal('${dataType}', '${escapedTitle}');
-                 ">
-                <img src="${coverPath}" class="mini-item-thumb" onerror="this.src='img/no-image.png'">
+            <div class="mini-item-card" onclick="
+                document.getElementById('monthlyModal').classList.remove('active'); 
+                const tabBtn = document.querySelector('.tab-btn[data-tab=\\'${dataType}\\']');
+                if(tabBtn) tabBtn.click();
+                openModal('${dataType}', '${escapedTitle}');
+            ">
+                <img src="${item.coverUrl}" class="mini-item-thumb" onerror="this.src='img/no-image.png'">
                 <div class="mini-item-title">${item.title}</div>
-            </div>
-        `;
+            </div>`;
     }).join('');
-
-    const monthlyModal = document.getElementById('monthlyModal');
-    if (monthlyModal) monthlyModal.classList.add('active');
+    document.getElementById('monthlyModal').classList.add('active');
 }
 
 // ============================================================
@@ -255,8 +208,7 @@ async function loadAppData() {
     const TIME_KEY = 'appData_time';
     const cachedData = localStorage.getItem(CACHE_KEY);
     const cachedTime = localStorage.getItem(TIME_KEY);
-    const isExpired = !cachedTime || (Date.now() - cachedTime > 60000); 
-
+    const isExpired = !cachedTime || (Date.now() - cachedTime > 60000);
     if (cachedData && !isExpired) {
         renderData(JSON.parse(cachedData));
     } else {
@@ -274,17 +226,15 @@ async function loadAppData() {
 
 function renderData(allData) {
     const logs = allData.logs || [];
-    wishlistData = allData.wishlist || []; 
-
+    wishlistData = allData.wishlist || [];
     booksData = logs.filter(item => item.type === 'book');
     moviesData = logs.filter(item => item.type === 'movie');
-    
     updateDisplay('books');
     updateDisplay('movies');
     setupFilters();
     updateStats();
     renderStats();
-    renderWishlist(); 
+    renderWishlist();
 }
 
 // ============================================================
@@ -297,24 +247,20 @@ function updateDisplay(type) {
     const typeUpper = type.charAt(0).toUpperCase() + type.slice(1);
     const searchBox = document.getElementById(`searchBox${typeUpper}`);
     const genreFilter = document.getElementById(`genreFilter${typeUpper}`);
-    
     if (!grid || !searchBox || !genreFilter) return;
 
     const searchVal = searchBox.value.toLowerCase();
     const genreVal = genreFilter.value;
-    
     let filtered = data.filter(item => {
         const text = (item.title + (item.creator || "") + (item.tags || "")).toLowerCase();
         return text.includes(searchVal) && (genreVal === "" || (item.genre || "") === genreVal);
     });
-
     const sortInfo = currentSort[type];
     filtered.sort((a, b) => {
         let valA = a[sortInfo.key] || "";
         let valB = b[sortInfo.key] || "";
         return sortInfo.asc ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
     });
-
     grid.innerHTML = filtered.map(item => `
         <div class="book-card" onclick="openModal('${type}', '${item.title.replace(/'/g, "\\'")}')">
             <img src="${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">
@@ -326,7 +272,6 @@ function updateDisplay(type) {
             </div>
         </div>
     `).join('');
-
     const noRes = document.getElementById(`noResults${typeUpper}`);
     if (noRes) noRes.style.display = filtered.length === 0 ? 'block' : 'none';
 }
@@ -358,8 +303,7 @@ function clearFilters(type) {
 
 function filterByTag(type, tagName) {
     const targetTab = type.endsWith('s') ? type : type + 's';
-    const tabBtn = document.querySelector(`.tab-btn[data-tab="${targetTab}"]`);
-    if (tabBtn) tabBtn.click();
+    document.querySelector(`.tab-btn[data-tab="${targetTab}"]`)?.click();
     const typeUpper = targetTab.charAt(0).toUpperCase() + targetTab.slice(1);
     const sBox = document.getElementById(`searchBox${typeUpper}`);
     if(sBox) {
@@ -371,8 +315,7 @@ function filterByTag(type, tagName) {
 
 function filterByAuthor(type, authorName) {
     const targetTab = type.endsWith('s') ? type : type + 's';
-    const tabBtn = document.querySelector(`.tab-btn[data-tab="${targetTab}"]`);
-    if (tabBtn) tabBtn.click();
+    document.querySelector(`.tab-btn[data-tab="${targetTab}"]`)?.click();
     const typeUpper = targetTab.charAt(0).toUpperCase() + targetTab.slice(1);
     const searchBox = document.getElementById(`searchBox${typeUpper}`);
     if (searchBox) {
@@ -391,18 +334,28 @@ function generateStars(rating) {
 function formatJSTDate(dateString) {
     if (!dateString) return "";
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString; 
+    if (isNaN(date.getTime())) return dateString;
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
 }
 
+// ============================================================
+// 4. 詳細モーダル（表示 + 編集モード切替）
+// ============================================================
+
 function openModal(type, title) {
     const data = type === 'books' ? booksData : moviesData;
     const item = data.find(d => d.title === title);
     if (!item) return;
+    editingItem = item;
+    editingType = type;
+    renderModalViewMode(item, type);
+    document.getElementById('modal').classList.add('active');
+}
 
+function renderModalViewMode(item, type) {
     document.getElementById('modalTitle').textContent = item.title;
     const authorName = item.creator || "";
     const modalAuthorEl = document.getElementById('modalAuthor');
@@ -411,7 +364,6 @@ function openModal(type, title) {
     } else {
         modalAuthorEl.textContent = "";
     }
-
     document.getElementById('modalDate').textContent = formatJSTDate(item.date);
     document.getElementById('modalRating').innerHTML = generateStars(item.rating);
     document.getElementById('modalCover').innerHTML = `<img src="${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">`;
@@ -421,163 +373,135 @@ function openModal(type, title) {
         const tag = t.trim();
         return tag ? `<span class="tag-badge" onclick="filterByTag('${type}', '${tag}')" style="cursor:pointer;">${tag}</span>` : "";
     }).join('');
-
-    document.getElementById('modal').classList.add('active');
+    document.getElementById('modalEditBtn').style.display = 'inline-flex';
+    document.getElementById('modalSaveBtn').style.display = 'none';
+    setModalEditMode(false);
 }
 
-function renderTimeline() {
-    const container = document.getElementById('timelineContainer');
-    const allData = [...booksData, ...moviesData].sort((a, b) => new Date(b.date) - new Date(a.date));
-    let lastMonth = null;
-    let html = '';
-
-    allData.forEach((item, index) => {
-        const itemDate = new Date(item.date);
-        const currentMonth = `${itemDate.getFullYear()}年${itemDate.getMonth() + 1}月`;
-        const type = item.type;
-
-        if (currentMonth !== lastMonth) {
-            html += `<div class="timeline-month-wrapper"><div class="timeline-month-label">${currentMonth}</div></div>`;
-            lastMonth = currentMonth;
-        }
-
-        let extraMargin = 20; 
-        if (index > 0) {
-            const prevDate = new Date(allData[index - 1].date);
-            const diffDays = (prevDate - itemDate) / (1000 * 60 * 60 * 24);
-            extraMargin = Math.min(20 + (diffDays * 8), 150);
-        }
-
-        const onClick = `openModal('${type === 'book' ? 'books' : 'movies'}', '${item.title.replace(/'/g, "\\'")}')`;
-        const coverPath = item.coverUrl;
-
-        html += `
-            <div class="timeline-card" onclick="${onClick}" style="margin-bottom: ${extraMargin}px;">
-                <div class="card-content">
-                    <div class="card-header">
-                        <small>${formatJSTDate(item.date)}</small>
-                        <img src="${coverPath}" class="card-thumbnail" onerror="this.src='img/no-image.png'">
-                    </div>
-                    <h4>${item.title}</h4>
-                    <div class="star-rating">${generateStars(item.rating)}</div>
-                </div>
-            </div>
-        `;
+function setModalEditMode(isEdit) {
+    ['modalDate','modalRating','modalReview','modalSynopsis'].forEach(id => {
+        document.getElementById(id).style.display = isEdit ? 'none' : 'block';
     });
-    container.innerHTML = html;
+    document.getElementById('modalTags').style.display = isEdit ? 'none' : 'flex';
+    document.getElementById('editFieldsArea').style.display = isEdit ? 'block' : 'none';
+    document.getElementById('modalEditBtn').style.display = isEdit ? 'none' : 'inline-flex';
+    document.getElementById('modalSaveBtn').style.display = isEdit ? 'inline-flex' : 'none';
 }
 
-function renderWishlist() {
-    const container = document.getElementById('wishlistGrid');
-    if (!container) return;
+function openEditMode() {
+    if (!editingItem) return;
+    const item = editingItem;
+    const genreList = editingType === 'books' ? BOOK_GENRES : MOVIE_GENRES;
+    const genreOptions = genreList.map(g =>
+        `<option value="${g}" ${g === item.genre ? 'selected' : ''}>${g}</option>`
+    ).join('');
 
-    const validData = wishlistData.filter(item => item.title && item.title.trim() !== "");
-
-    if (validData.length === 0) {
-        container.innerHTML = '<p style="color:white; text-align:center; grid-column:1/-1;">リストは空です。右下の「＋」から追加してみましょう！</p>';
-        return;
-    }
-
-    container.innerHTML = validData.map(item => {
-        const icon = item.type === 'book' ? '📖' : '🎬';
-        const typeLabel = item.type === 'book' ? 'Book' : 'Movie';
-        const stickyColor = item.type === 'book' ? '#fff9c4' : '#ffd1dc';
-        
-        const safeTitle = item.title.replace(/'/g, "\\'");
-        const safeCreator = (item.creator || '').replace(/'/g, "\\'");
-
-        return `
-        <div class="wish-card" style="background: ${stickyColor};">
-            <div class="wish-type-badge">${icon} ${typeLabel}</div>
-            <div class="wish-done-check" title="記録へ昇格" onclick="event.stopPropagation(); openWishDoneModal('${safeTitle}', '${item.type}', '${safeCreator}')">✔</div>
-            <h4>${item.title}</h4>
-            <div class="creator">${item.creator || ''}</div>
-            <div class="memo">${(item.memo || '').replace(/\n/g, '<br>')}</div>
-            ${item.link ? `<a href="${item.link}" target="_blank" class="wish-link" onclick="event.stopPropagation()">🔗 リンク</a>` : ''}
+    document.getElementById('editFieldsArea').innerHTML = `
+        <div class="edit-field-group">
+            <label class="edit-label">📅 日付</label>
+            <input type="date" id="editDate" class="edit-input" value="${formatJSTDate(item.date)}">
         </div>
-        `;
-    }).join('');
+        <div class="edit-field-group">
+            <label class="edit-label">⭐ 評価</label>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <input type="range" id="editRating" min="0" max="5" step="0.5" value="${item.rating || 0}"
+                       style="flex:1; accent-color:#ffca28;"
+                       oninput="document.getElementById('editRatingValue').textContent = parseFloat(this.value).toFixed(1)">
+                <span id="editRatingValue" style="font-weight:bold; color:#ffca28; font-size:1.3rem; min-width:32px;">
+                    ${parseFloat(item.rating || 0).toFixed(1)}
+                </span>
+            </div>
+        </div>
+        <div class="edit-field-group">
+            <label class="edit-label">🏷️ タグ <span class="edit-hint">カンマ区切りで入力</span></label>
+            <input type="text" id="editTags" class="edit-input" value="${item.tags || ''}" placeholder="タグ1, タグ2, タグ3">
+        </div>
+        <div class="edit-field-group">
+            <label class="edit-label">📂 ジャンル</label>
+            <select id="editGenre" class="edit-input">${genreOptions}</select>
+        </div>
+        <div class="edit-field-group">
+            <label class="edit-label">📝 感想</label>
+            <textarea id="editReview" class="edit-input edit-textarea" rows="5">${item.review || ''}</textarea>
+        </div>
+    `;
+    setModalEditMode(true);
+}
+
+async function saveEditedItem() {
+    if (!editingItem) return;
+    const saveBtn = document.getElementById('modalSaveBtn');
+    saveBtn.textContent = '保存中...';
+    saveBtn.disabled = true;
+    const data = {
+        action: 'updateLog',
+        originalTitle: editingItem.title,
+        type: editingType === 'books' ? 'book' : 'movie',
+        date: document.getElementById('editDate').value.replace(/-/g, '/'),
+        rating: document.getElementById('editRating').value,
+        tags: document.getElementById('editTags').value,
+        genre: document.getElementById('editGenre').value,
+        review: document.getElementById('editReview').value
+    };
+    await sendToGAS(data, saveBtn, '💾 保存');
 }
 
 // ============================================================
-// 4. モーダル操作系
+// 5. モーダル操作系（Wishlist）
 // ============================================================
 
 function openWishDoneModal(title, type, creator) {
     currentTargetType = type;
     currentTargetCreator = creator;
-
     document.getElementById('wishDoneItemName').textContent = title;
-    document.getElementById('doneDate').value = new Date().toLocaleDateString('sv-SE'); 
+    document.getElementById('doneDate').value = new Date().toLocaleDateString('sv-SE');
     document.getElementById('doneMemo').value = '';
-    
     const ratingRange = document.getElementById('ratingRange');
-    if (ratingRange) {
-        ratingRange.value = "3.0";
-        updateStarsRange("3.0");
-    }
-
-    // 候補エリアをリセットしてから検索開始
+    if (ratingRange) { ratingRange.value = "3.0"; updateStarsRange("3.0"); }
     resetWishDoneSearchArea();
     searchCandidatesForWishDone(title, type);
-
     document.getElementById('wishDoneModal').classList.add('active');
 }
 
 function updateStarsRange(val) {
-    const valueDisplay = document.getElementById('starValueRange');
-    if (valueDisplay) {
-        valueDisplay.textContent = parseFloat(val).toFixed(1);
-    }
+    const el = document.getElementById('starValueRange');
+    if (el) el.textContent = parseFloat(val).toFixed(1);
 }
 
 // ============================================================
-// 5. タイトル検索・候補表示（GAS経由）
+// 6. タイトル検索・候補表示（GAS経由）
 // ============================================================
 
-/**
- * 候補カードのHTMLを生成する共通関数
- */
 function buildCandidateCard(candidate, onClickFn) {
     const noImg = 'img/no-image.png';
-    const cover = candidate.coverUrl || noImg;
     const meta = [
         candidate.publisher,
         candidate.publishedDate ? candidate.publishedDate + '年' : '',
         candidate.pageCount ? candidate.pageCount + 'p' : ''
     ].filter(Boolean).join(' ／ ');
-
     return `
         <div class="candidate-card" onclick="${onClickFn}">
-            <img src="${cover}" class="candidate-cover" onerror="this.src='${noImg}'">
+            <img src="${candidate.coverUrl || noImg}" class="candidate-cover" onerror="this.src='${noImg}'">
             <div class="candidate-info">
                 <div class="candidate-title">${candidate.title}</div>
                 <div class="candidate-creator">${candidate.creator || ''}</div>
                 ${meta ? `<div class="candidate-meta">${meta}</div>` : ''}
             </div>
-        </div>
-    `;
+        </div>`;
 }
 
-/**
- * 選択済み作品の確認表示HTMLを生成する共通関数
- */
 function buildSelectedInfo(candidate) {
     const noImg = 'img/no-image.png';
-    const cover = candidate.coverUrl || noImg;
     return `
         <div class="selected-info-inner">
-            <img src="${cover}" class="selected-cover" onerror="this.src='${noImg}'">
+            <img src="${candidate.coverUrl || noImg}" class="selected-cover" onerror="this.src='${noImg}'">
             <div>
                 <div class="selected-title">✅ ${candidate.title}</div>
                 <div class="candidate-creator">${candidate.creator || ''}</div>
                 ${candidate.publishedDate ? `<div class="candidate-meta">${candidate.publishedDate}年</div>` : ''}
             </div>
-        </div>
-    `;
+        </div>`;
 }
-
-// --- Wishlist完了モーダル用の検索 ---
 
 function resetWishDoneSearchArea() {
     selectedCandidate = null;
@@ -592,34 +516,22 @@ function resetWishDoneSearchArea() {
 async function searchCandidatesForWishDone(title, type) {
     const statusEl = document.getElementById('wishDoneSearchStatus');
     const candidatesEl = document.getElementById('wishDoneCandidates');
-    const selectedEl = document.getElementById('wishDoneSelectedInfo');
-
     try {
         const url = `${SHEET_URL}?action=search&type=${encodeURIComponent(type)}&q=${encodeURIComponent(title)}`;
         const res = await fetch(url);
         const data = await res.json();
         const results = data.results || [];
-
         if (results.length === 0) {
             if (statusEl) statusEl.textContent = '候補が見つかりませんでした。そのまま保存します。';
             return;
         }
-
         if (statusEl) statusEl.style.display = 'none';
-
-        // 候補が1件だけの場合は自動選択
-        if (results.length === 1) {
-            selectWishDoneCandidate(results[0]);
-            return;
-        }
-
-        // 複数件：カード表示
+        if (results.length === 1) { selectWishDoneCandidate(results[0]); return; }
         if (candidatesEl) {
-            candidatesEl.innerHTML = results.map((c, i) =>
+            candidatesEl.innerHTML = results.map(c =>
                 buildCandidateCard(c, `selectWishDoneCandidate(${JSON.stringify(c).replace(/"/g, '&quot;')})`)
             ).join('');
         }
-
     } catch (err) {
         console.error('WishDone検索エラー:', err);
         if (statusEl) statusEl.textContent = '検索に失敗しました。そのまま保存します。';
@@ -629,77 +541,53 @@ async function searchCandidatesForWishDone(title, type) {
 function selectWishDoneCandidate(candidate) {
     selectedCandidate = candidate;
     currentTargetCreator = candidate.creator || currentTargetCreator;
-
     const candidatesEl = document.getElementById('wishDoneCandidates');
     const selectedEl = document.getElementById('wishDoneSelectedInfo');
     const statusEl = document.getElementById('wishDoneSearchStatus');
-
     if (candidatesEl) candidatesEl.innerHTML = '';
     if (statusEl) statusEl.style.display = 'none';
-    if (selectedEl) {
-        selectedEl.innerHTML = buildSelectedInfo(candidate);
-        selectedEl.style.display = 'block';
-    }
+    if (selectedEl) { selectedEl.innerHTML = buildSelectedInfo(candidate); selectedEl.style.display = 'block'; }
 }
-
-// --- Books/Movies追加モーダル用の検索 ---
 
 function openAddLogModal(type) {
     addLogType = type;
     selectedCandidate = null;
-
-    // タイトル・アイコンを設定
     const titleEl = document.getElementById('addLogTitle');
     if (titleEl) titleEl.textContent = type === 'book' ? '📚 本を追加' : '🎬 映画を追加';
-
-    // フォームをリセット
     document.getElementById('addLogSearchInput').value = '';
     document.getElementById('addLogSearchStatus').style.display = 'none';
     document.getElementById('addLogCandidates').innerHTML = '';
-    document.getElementById('addLogCreator').value = '';
     document.getElementById('addLogRating').value = '3.0';
     document.getElementById('addLogRatingValue').textContent = '3.0';
     document.getElementById('addLogDate').value = new Date().toLocaleDateString('sv-SE');
     document.getElementById('addLogReview').value = '';
-
-    // STEP1を表示、STEP2を隠す
     document.getElementById('addLogStep1').style.display = 'block';
     document.getElementById('addLogStep2').style.display = 'none';
-
     document.getElementById('addLogModal').classList.add('active');
-
-    // Enterキーで検索できるようにする
-    const searchInput = document.getElementById('addLogSearchInput');
-    searchInput.onkeydown = (e) => { if (e.key === 'Enter') executeAddLogSearch(); };
+    document.getElementById('addLogSearchInput').onkeydown = (e) => { if (e.key === 'Enter') executeAddLogSearch(); };
 }
 
 async function executeAddLogSearch() {
     const query = document.getElementById('addLogSearchInput').value.trim();
     if (!query) return;
-
     const statusEl = document.getElementById('addLogSearchStatus');
     const candidatesEl = document.getElementById('addLogCandidates');
-
     statusEl.textContent = '🔍 検索中...';
     statusEl.style.display = 'block';
     candidatesEl.innerHTML = '';
-
     try {
         const url = `${SHEET_URL}?action=search&type=${encodeURIComponent(addLogType)}&q=${encodeURIComponent(query)}`;
         const res = await fetch(url);
         const data = await res.json();
         const results = data.results || [];
-
         if (results.length === 0) {
             statusEl.textContent = '候補が見つかりませんでした。タイトルを変えて再検索してみてください。';
             return;
         }
-
         statusEl.style.display = 'none';
         candidatesEl.innerHTML = results.map(c =>
             buildCandidateCard(c, `selectAddLogCandidate(${JSON.stringify(c).replace(/"/g, '&quot;')})`)
         ).join('');
-
     } catch (err) {
         console.error('AddLog検索エラー:', err);
         statusEl.textContent = '検索に失敗しました。時間をおいて再試行してください。';
@@ -708,76 +596,121 @@ async function executeAddLogSearch() {
 
 function selectAddLogCandidate(candidate) {
     selectedCandidate = candidate;
-
-    // STEP1を隠してSTEP2を表示
     document.getElementById('addLogStep1').style.display = 'none';
     document.getElementById('addLogStep2').style.display = 'block';
-
-    // 選択作品を表示
     const selectedEl = document.getElementById('addLogSelectedInfo');
     if (selectedEl) selectedEl.innerHTML = buildSelectedInfo(candidate);
-
-    // 著者・監督を自動入力
-    if (candidate.creator) {
-        document.getElementById('addLogCreator').value = candidate.creator;
-    }
 }
 
 // ============================================================
-// 6. 送信・保存処理（GAS連携）
+// 7. 送信・保存処理（GAS連携）
 // ============================================================
 
 async function sendToGAS(data, btnElement, originalText) {
     try {
-        const response = await fetch(SHEET_URL, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        const response = await fetch(SHEET_URL, { method: 'POST', body: JSON.stringify(data) });
         if (response.ok) {
             alert('保存完了しました！');
             localStorage.removeItem('appData_cache');
             localStorage.removeItem('appData_time');
-            location.reload(); 
+            location.reload();
         }
     } catch (e) {
         alert('保存に失敗しました。通信環境を確認してください。');
         console.error(e);
-        if (btnElement) {
-            btnElement.textContent = originalText;
-            btnElement.disabled = false;
-        }
+        if (btnElement) { btnElement.textContent = originalText; btnElement.disabled = false; }
     }
 }
 
 // ============================================================
-// 7. 初期化とイベントリスナー
+// 8. Wishlist・Timeline描画
+// ============================================================
+
+function renderTimeline() {
+    const container = document.getElementById('timelineContainer');
+    const allData = [...booksData, ...moviesData].sort((a, b) => new Date(b.date) - new Date(a.date));
+    let lastMonth = null;
+    let html = '';
+    allData.forEach((item, index) => {
+        const itemDate = new Date(item.date);
+        const currentMonth = `${itemDate.getFullYear()}年${itemDate.getMonth() + 1}月`;
+        if (currentMonth !== lastMonth) {
+            html += `<div class="timeline-month-wrapper"><div class="timeline-month-label">${currentMonth}</div></div>`;
+            lastMonth = currentMonth;
+        }
+        let extraMargin = 20;
+        if (index > 0) {
+            const diffDays = (new Date(allData[index - 1].date) - itemDate) / (1000 * 60 * 60 * 24);
+            extraMargin = Math.min(20 + (diffDays * 8), 150);
+        }
+        const type = item.type;
+        const onClick = `openModal('${type === 'book' ? 'books' : 'movies'}', '${item.title.replace(/'/g, "\\'")}')`;
+        html += `
+            <div class="timeline-card" onclick="${onClick}" style="margin-bottom: ${extraMargin}px;">
+                <div class="card-content">
+                    <div class="card-header">
+                        <small>${formatJSTDate(item.date)}</small>
+                        <img src="${item.coverUrl}" class="card-thumbnail" onerror="this.src='img/no-image.png'">
+                    </div>
+                    <h4>${item.title}</h4>
+                    <div class="star-rating">${generateStars(item.rating)}</div>
+                </div>
+            </div>`;
+    });
+    container.innerHTML = html;
+}
+
+function renderWishlist() {
+    const container = document.getElementById('wishlistGrid');
+    if (!container) return;
+    const validData = wishlistData.filter(item => item.title && item.title.trim() !== "");
+    if (validData.length === 0) {
+        container.innerHTML = '<p style="color:white; text-align:center; grid-column:1/-1;">リストは空です。右下の「＋」から追加してみましょう！</p>';
+        return;
+    }
+    container.innerHTML = validData.map(item => {
+        const icon = item.type === 'book' ? '📖' : '🎬';
+        const typeLabel = item.type === 'book' ? 'Book' : 'Movie';
+        const stickyColor = item.type === 'book' ? '#fff9c4' : '#ffd1dc';
+        const safeTitle = item.title.replace(/'/g, "\\'");
+        const safeCreator = (item.creator || '').replace(/'/g, "\\'");
+        return `
+        <div class="wish-card" style="background: ${stickyColor};">
+            <div class="wish-type-badge">${icon} ${typeLabel}</div>
+            <div class="wish-done-check" title="記録へ昇格" onclick="event.stopPropagation(); openWishDoneModal('${safeTitle}', '${item.type}', '${safeCreator}')">✔</div>
+            <h4>${item.title}</h4>
+            <div class="creator">${item.creator || ''}</div>
+            <div class="memo">${(item.memo || '').replace(/\n/g, '<br>')}</div>
+            ${item.link ? `<a href="${item.link}" target="_blank" class="wish-link" onclick="event.stopPropagation()">🔗 リンク</a>` : ''}
+        </div>`;
+    }).join('');
+}
+
+// ============================================================
+// 9. 初期化とイベントリスナー
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
     loadAppData();
-    
-    // タブ切り替え
+
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.onclick = () => {
             document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
             btn.classList.add('active');
             const targetTab = btn.dataset.tab;
             document.getElementById(`${targetTab}Tab`).classList.add('active');
-            
             if (targetTab === 'timeline') renderTimeline();
             else if (targetTab === 'stats') { updateStats(); renderStats(); }
             else if (targetTab === 'wishlist') renderWishlist();
             else clearFilters(targetTab);
         };
     });
-    
-    // 検索窓
+
     ['Books', 'Movies'].forEach(type => {
         const el = document.getElementById(`searchBox${type}`);
         if(el) el.oninput = () => updateDisplay(type.toLowerCase());
     });
-    
-    // 並び替え
+
     document.querySelectorAll('.sort-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const type = btn.dataset.type;
@@ -792,121 +725,86 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // モーダルの閉じるボタン
-    const modalClose = document.getElementById('modalClose');
-    if (modalClose) modalClose.onclick = () => document.getElementById('modal').classList.remove('active');
+    document.getElementById('modalClose').onclick = () => {
+        document.getElementById('modal').classList.remove('active');
+        editingItem = null; editingType = "";
+    };
+    document.getElementById('monthlyModalClose')?.addEventListener('click', () => document.getElementById('monthlyModal').classList.remove('active'));
+    document.getElementById('wishDoneClose')?.addEventListener('click', () => document.getElementById('wishDoneModal').classList.remove('active'));
+    document.getElementById('addWishClose')?.addEventListener('click', () => document.getElementById('addWishModal').classList.remove('active'));
+    document.getElementById('addLogClose')?.addEventListener('click', () => document.getElementById('addLogModal').classList.remove('active'));
 
-    const monthlyModalClose = document.getElementById('monthlyModalClose');
-    if (monthlyModalClose) monthlyModalClose.onclick = () => document.getElementById('monthlyModal').classList.remove('active');
+    // 詳細モーダルの編集・保存ボタン
+    document.getElementById('modalEditBtn')?.addEventListener('click', openEditMode);
+    document.getElementById('modalSaveBtn')?.addEventListener('click', saveEditedItem);
 
-    const wishDoneClose = document.getElementById('wishDoneClose');
-    if (wishDoneClose) wishDoneClose.onclick = () => document.getElementById('wishDoneModal').classList.remove('active');
+    // Books/Movies追加ボタン
+    document.getElementById('openAddBookBtn')?.addEventListener('click', () => openAddLogModal('book'));
+    document.getElementById('openAddMovieBtn')?.addEventListener('click', () => openAddLogModal('movie'));
+    document.getElementById('addLogSearchBtn')?.addEventListener('click', executeAddLogSearch);
 
-    const addWishClose = document.getElementById('addWishClose');
-    if (addWishClose) addWishClose.onclick = () => document.getElementById('addWishModal').classList.remove('active');
+    document.getElementById('addLogResearchBtn')?.addEventListener('click', () => {
+        selectedCandidate = null;
+        document.getElementById('addLogStep1').style.display = 'block';
+        document.getElementById('addLogStep2').style.display = 'none';
+        document.getElementById('addLogCandidates').innerHTML = '';
+        document.getElementById('addLogSearchStatus').style.display = 'none';
+    });
 
-    const addLogClose = document.getElementById('addLogClose');
-    if (addLogClose) addLogClose.onclick = () => document.getElementById('addLogModal').classList.remove('active');
-
-    // Books/Moviesタブの追加ボタン
-    const openAddBookBtn = document.getElementById('openAddBookBtn');
-    if (openAddBookBtn) openAddBookBtn.onclick = () => openAddLogModal('book');
-
-    const openAddMovieBtn = document.getElementById('openAddMovieBtn');
-    if (openAddMovieBtn) openAddMovieBtn.onclick = () => openAddLogModal('movie');
-
-    // AddLogモーダル：検索ボタン
-    const addLogSearchBtn = document.getElementById('addLogSearchBtn');
-    if (addLogSearchBtn) addLogSearchBtn.onclick = executeAddLogSearch;
-
-    // AddLogモーダル：選び直しボタン
-    const addLogResearchBtn = document.getElementById('addLogResearchBtn');
-    if (addLogResearchBtn) {
-        addLogResearchBtn.onclick = () => {
-            selectedCandidate = null;
-            document.getElementById('addLogStep1').style.display = 'block';
-            document.getElementById('addLogStep2').style.display = 'none';
-            document.getElementById('addLogCandidates').innerHTML = '';
-            document.getElementById('addLogSearchStatus').style.display = 'none';
+    document.getElementById('submitAddLogBtn')?.addEventListener('click', async () => {
+        const title = selectedCandidate ? selectedCandidate.title : document.getElementById('addLogSearchInput').value.trim();
+        if (!title) return alert('タイトルを入力・選択してください');
+        const data = {
+            action: 'addLog',
+            type: addLogType,
+            title: title,
+            creator: selectedCandidate ? selectedCandidate.creator : '',
+            date: document.getElementById('addLogDate').value.replace(/-/g, '/'),
+            rating: document.getElementById('addLogRating').value,
+            review: document.getElementById('addLogReview').value,
+            externalId: selectedCandidate ? selectedCandidate.externalId : ''
         };
-    }
-
-    // AddLogモーダル：保存ボタン
-    const submitAddLogBtn = document.getElementById('submitAddLogBtn');
-    if (submitAddLogBtn) {
-        submitAddLogBtn.addEventListener('click', async () => {
-            const title = selectedCandidate ? selectedCandidate.title : document.getElementById('addLogSearchInput').value.trim();
-            if (!title) return alert('タイトルを入力・選択してください');
-
-            const data = {
-                action: 'addLog',
-                type: addLogType,
-                title: title,
-                creator: document.getElementById('addLogCreator').value,
-                date: document.getElementById('addLogDate').value.replace(/-/g, '/'),
-                rating: document.getElementById('addLogRating').value,
-                review: document.getElementById('addLogReview').value,
-                externalId: selectedCandidate ? selectedCandidate.externalId : ''
-            };
-
-            submitAddLogBtn.textContent = '保存中... (AIが情報を生成しています)';
-            submitAddLogBtn.disabled = true;
-            await sendToGAS(data, submitAddLogBtn, '記録に保存する');
-        });
-    }
+        const btn = document.getElementById('submitAddLogBtn');
+        btn.textContent = '保存中... (AIが情報を生成しています)';
+        btn.disabled = true;
+        await sendToGAS(data, btn, '記録に保存する');
+    });
 
     // Wishlist追加ボタン
-    const openAddWishBtn = document.getElementById('openAddWishBtn');
-    if (openAddWishBtn) {
-        openAddWishBtn.onclick = () => {
-            document.getElementById('newTitle').value = '';
-            document.getElementById('newCreator').value = '';
-            document.getElementById('newMemo').value = '';
-            document.getElementById('newLink').value = '';
-            document.getElementById('addWishModal').classList.add('active');
+    document.getElementById('openAddWishBtn')?.addEventListener('click', () => {
+        ['newTitle','newCreator','newMemo','newLink'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('addWishModal').classList.add('active');
+    });
+
+    document.getElementById('submitAddWishBtn')?.addEventListener('click', async () => {
+        const title = document.getElementById('newTitle').value;
+        if (!title) return alert("タイトルを入力してください");
+        const data = {
+            action: 'addWishlist',
+            type: document.querySelector('input[name="newType"]:checked').value,
+            title, creator: document.getElementById('newCreator').value,
+            memo: document.getElementById('newMemo').value,
+            link: document.getElementById('newLink').value
         };
-    }
+        const btn = document.getElementById('submitAddWishBtn');
+        btn.textContent = "保存中..."; btn.disabled = true;
+        await sendToGAS(data, btn, "Wishlistに追加する");
+    });
 
-    // Wishlist追加：送信ボタン
-    const submitAddWishBtn = document.getElementById('submitAddWishBtn');
-    if (submitAddWishBtn) {
-        submitAddWishBtn.addEventListener('click', async () => {
-            const title = document.getElementById('newTitle').value;
-            if(!title) return alert("タイトルを入力してください");
-            
-            const data = {
-                action: 'addWishlist',
-                type: document.querySelector('input[name="newType"]:checked').value,
-                title: title,
-                creator: document.getElementById('newCreator').value,
-                memo: document.getElementById('newMemo').value,
-                link: document.getElementById('newLink').value
-            };
-            
-            submitAddWishBtn.textContent = "保存中...";
-            submitAddWishBtn.disabled = true;
-            await sendToGAS(data, submitAddWishBtn, "Wishlistに追加する");
-        });
-    }
+    document.getElementById('submitDoneBtn')?.addEventListener('click', async () => {
+        const data = {
+            action: 'promoteToLog',
+            title: document.getElementById('wishDoneItemName').textContent,
+            type: currentTargetType,
+            creator: selectedCandidate ? selectedCandidate.creator : currentTargetCreator,
+            date: document.getElementById('doneDate').value.replace(/-/g, '/'),
+            rating: document.getElementById('ratingRange').value,
+            review: document.getElementById('doneMemo').value,
+            externalId: selectedCandidate ? selectedCandidate.externalId : ''
+        };
 
-    // Wishlist完了（昇格）：送信ボタン
-    const submitDoneBtn = document.getElementById('submitDoneBtn');
-    if (submitDoneBtn) {
-        submitDoneBtn.addEventListener('click', async () => {
-            const title = document.getElementById('wishDoneItemName').textContent;
-            const data = {
-                action: 'promoteToLog',
-                title: title,
-                type: currentTargetType,
-                creator: selectedCandidate ? selectedCandidate.creator : currentTargetCreator,
-                date: document.getElementById('doneDate').value.replace(/-/g, '/'),
-                rating: document.getElementById('ratingRange').value,
-                review: document.getElementById('doneMemo').value,
-                externalId: selectedCandidate ? selectedCandidate.externalId : ''
-            };
-
-            submitDoneBtn.textContent = '保存中... (AIが情報を生成しています)';
-            submitDoneBtn.disabled = true;
-            await sendToGAS(data, submitDoneBtn, "この内容で記録に保存する");
-        });
-    }
+        const btn = document.getElementById('submitDoneBtn');
+        btn.textContent = '保存中... (AIが情報を生成しています)'; btn.disabled = true;
+        await sendToGAS(data, btn, "この内容で記録に保存する");
+    });
 });
