@@ -31,25 +31,23 @@ header h1 {
 /* タブ全体のコンテナ */
 .tab-buttons {
     display: flex;
-    overflow-x: auto;          /* 横スクロールを許可 */
-    white-space: nowrap;       /* ボタンを折り返さない */
+    overflow-x: auto;
+    white-space: nowrap;
     padding: 10px 0;
-    gap: 10px;                 /* ボタン同士の間隔 */
-    -webkit-overflow-scrolling: touch; /* iPhoneでのスムーズスクロール */
-    scrollbar-width: none;     /* Firefoxでスクロールバーを隠す */
+    gap: 10px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
 }
 
-/* スクロールバーを隠す（Chrome/Safari用） */
 .tab-buttons::-webkit-scrollbar {
     display: none;
 }
 
-/* ボタンのデザイン */
 .tab-btn {
-    flex-shrink: 0;            /* ボタンが縮むのを防ぐ */
+    flex-shrink: 0;
     padding: 8px 16px;
     border: 1px solid #ccc;
-    border-radius: 20px;       /* 角を丸くして今風に */
+    border-radius: 20px;
     background: #fff;
     cursor: pointer;
     transition: all 0.2s;
@@ -59,7 +57,6 @@ header h1 {
     background: rgba(255, 255, 255, 0.3);
 }
 
-/* アクティブなボタンの色 */
 .tab-btn.active {
     background: #a3c4f3;
     color: #fff;
@@ -187,7 +184,6 @@ header h1 {
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    /* height: 250px; は削除または auto にします */
 }
 
 .book-card:hover {
@@ -197,18 +193,12 @@ header h1 {
 
 .book-cover {
     width: 100%;
-    /* ここで比率を固定！横幅に対する高さを自動計算します */
-    /* 文庫本風なら 2/3、もう少し正方形に近ければ 3/4 など */
     aspect-ratio: 2 / 3; 
-    
-    /* これが重要！画像がどんな比率でも、枠いっぱいにトリミングして埋めます */
     object-fit: cover; 
-    
     background: #f5f5f5;
 }
 
 .book-info {
-    /* paddingを少し小さくして、下の情報の見切れを防ぎます */
     padding: 12px 10px;
     background: #fff;
 	min-height: 80px;
@@ -226,23 +216,21 @@ header h1 {
     -webkit-box-orient: vertical;
 }
 
-/* カード内のタイトルだけ消す */
 .book-card .book-title {
     display: none;
-    white-space: nowrap;      /* 改行を禁止する */
-    overflow: hidden;         /* はみ出した分を隠す */
-    text-overflow: ellipsis;  /* はみ出しを「…」にする */
- 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .book-author {
     font-size: 12px;
     color: #666;
     margin-bottom: 4px;
-    white-space: nowrap;      /* 改行を禁止する */
-    overflow: hidden;         /* はみ出した分を隠す */
-    text-overflow: ellipsis;  /* はみ出しを「…」にする */    
-    display: block;           /* 確実に1行として扱う */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
 }
 
 .book-date {
@@ -252,33 +240,30 @@ header h1 {
 }
 
 .book-rating {
-    width: 100%;             /* カードの幅に合わせる */
-    overflow: hidden;        /* はみ出しをカット */
-    margin-top: auto;        /* カードの一番下に配置 */
+    width: 100%;
+    overflow: hidden;
+    margin-top: auto;
 }
 
-/* 星全体を包む器 */
 .star-rating {
     position: relative;
     display: inline-block;
-    font-size: 15px; /* ★ここを14px〜18pxの間で調整してください */
+    font-size: 15px;
     line-height: 1;
-    letter-spacing: -2px; /* ★間隔を詰めるとカード内に収まりやすくなります */
+    letter-spacing: -2px;
     cursor: default;
     user-select: none;
 }
 
-/* 下地のグレーの星 */
 .star-base {
-    color: #e0e0e0; /* 薄いグレー */
+    color: #e0e0e0;
 }
 
-/* 上に乗る金色の星 */
 .star-current {
     position: absolute;
     top: 0;
     left: 0;
-    color: #FFD700; /* ゴールド */
+    color: #FFD700;
     overflow: hidden;
     white-space: nowrap;
 }
@@ -372,10 +357,9 @@ header h1 {
     margin-bottom: 6px;
 }
 
-/* モーダル内の著者名のスタイル */
 .clickable-author {
-    color: #4A90E2; /* リンクっぽい青色 */
-    text-decoration: underline; /* 下線 */
+    color: #4A90E2;
+    text-decoration: underline;
     cursor: pointer;
     transition: opacity 0.2s;
 }
@@ -455,7 +439,7 @@ header h1 {
     font-size: 18px;
 }
 
-/* 統計タブ全体のレイアウト */
+/* 統計タブ */
 .year-selector {
     display: flex;
     align-items: center;
@@ -492,12 +476,11 @@ header h1 {
 
 .stats-summary {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3つ並べる */
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     margin-bottom: 20px;
 }
 
-/* 各数値カードのデザイン */
 .stat-card {
     background: white;
     padding: 15px;
@@ -519,41 +502,39 @@ header h1 {
     color: #333;
 }
 
-/* グラフエリア（ここで背景と影を指定） */
 .canvas-wrapper {
-    background: white;        /* 文字が読めるように背景を白に */
+    background: white;
     border-radius: 15px;
-	padding: 20px;            /* グラフと枠の間に余白 */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 影をつける */
-	max-width: 400px; /* ここでグラフ全体の大きさを制限 */
-    margin: 20px auto; /* 上下に余白をとり、中央寄せにする */	
+	padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+	max-width: 400px;
+    margin: 20px auto;
 	text-align: center;
 	width: 100%
 }
 
 .custom-legend {
-    display: flex;          /* 横並びにするための flex */
-    flex-wrap: wrap;        /* 画面幅が狭いときは自動で折り返す */
-    justify-content: center; /* 項目全体を中央に寄せる */
-    gap: 10px ;              /* 項目同士の隙間を調整 */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
     margin-top: 20px;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
-    white-space: nowrap;    /* 文字が途中で改行されるのを防ぐ */
+    white-space: nowrap;
 }
 
-/* ■の四角形 */
 .legend-box {
     width: 12px;
     height: 12px;
-    margin-right: 6px;      /* 四角と文字の隙間 */
+    margin-right: 6px;
     border-radius: 2px;
 }
 .legend-text {
-    line-height: 1; /* 文字が複数行になる場合の行間 */
+    line-height: 1;
 }
 
 .stats-container {
@@ -566,26 +547,20 @@ header h1 {
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     display: none; 
 }
-/* --- ミニモーダル専用スタイル --- */
-/* ミニモーダルの重なり順を通常モーダルと同等に設定 */
-#monthlyModal {
-    z-index: 1000;
-}
 
-/* 詳細モーダルの重なり順（念のため少し高く設定） */
-#modal {
-    z-index: 1100;
-}
+/* ミニモーダル */
+#monthlyModal { z-index: 1000; }
+#modal { z-index: 1100; }
 
 .mini-modal {
-    max-width: 450px !important; /* 通常モーダルよりスリムに */
+    max-width: 450px !important;
     max-height: 80vh;
     overflow-y: auto;
 }
 
 .mini-card-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2列交互に並べる */
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
     padding: 10px 0;
 }
@@ -606,11 +581,10 @@ header h1 {
     background: #f0f4f8;
 }
 
-/* 画像サイズを強制的に統一する設定 */
 .mini-item-thumb {
     width: 100%;
-    aspect-ratio: 2 / 3; /* 本やポスターの比率に固定 */
-    object-fit: cover;   /* 比率が違っても隙間なく埋める */
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
     border-radius: 4px;
     margin-bottom: 8px;
     background: #eee;
@@ -621,14 +595,13 @@ header h1 {
     font-weight: bold;
     color: #444;
     line-height: 1.3;
-    /* 2行目以降を三点リーダーにする */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
-/*----タイムライン共通----*/
+/* タイムライン */
 .timeline-container {
     position: relative;
     max-width: 800px;
@@ -636,7 +609,6 @@ header h1 {
     padding: 20px 0;
 }
 
-/* 中央の縦線（PC用） */
 .timeline-container::after {
     content: '';
     position: absolute;
@@ -647,7 +619,7 @@ header h1 {
     left: 50%;
     margin-left: -2px;
 }
-/* PC: 中央配置のためのラッパー */
+
 .timeline-month-wrapper {
     text-align: center;
     width: 100%;
@@ -656,7 +628,6 @@ header h1 {
     position: relative;
 }
 
-/* ラベル本体 */
 .timeline-month-label {
     display: inline-block;
     padding: 6px 20px;
@@ -669,24 +640,20 @@ header h1 {
     z-index: 3;
 }
 
-/* スマホ用: 左側に寄せる */
 @media (max-width: 600px) {
     .timeline-month-wrapper {
-        text-align: left; /* 左寄せ */
-        padding-left: 10px; /* 線と重ならないよう微調整 */
-
+        text-align: left;
+        padding-left: 10px;
     }
 }
 
-/* カードの基本設定（統一） */
 .timeline-card {
     position: relative;
     width: 45%;
     cursor: pointer;
-    margin-bottom: 20px; /* ジグザグの重なりを減らすならここを調整 */
+    margin-bottom: 20px;
 }
 
-/* 統一されたカードの中身 */
 .card-content {
     background: #fff;
     padding: 15px;
@@ -696,32 +663,16 @@ header h1 {
 }
 .card-content:hover { transform: scale(1.02); }
 
-.card-content small { color: #888; display: block; font-size: 0.8rem; }
-.card-content h4 { margin: 5px 0; font-size: 0.95rem; line-height: 1.3; }
-
-
-/* カード内の画像と文字のスタイル */
-.card-content {
-    background: #fff;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
-}
-.card-content:hover { transform: scale(1.02); }
-
-/* 日付とサムネイルを横並びにするラッパー */
 .card-header {
     display: flex;
-    align-items: flex-start; /* centerから変更 */
+    align-items: flex-start;
     justify-content: space-between;
     margin-bottom: 0px !important; 
-    min-height: 40px; /* 画像の高さに合わせて調整 */
+    min-height: 40px;
 }
 
-/* サムネイル画像 */
 .card-thumbnail {
-    width: 50px; /* 少し小さくすると全体のバランスがタイトになります */
+    width: 50px;
     height: 50px;
     object-fit: cover;
     border-radius: 4px;
@@ -730,29 +681,22 @@ header h1 {
 
 .card-content small { color: #888; font-size: 0.8rem; }
 .card-content h4 {
-    margin: -20px 0 0px 0 !important; /* マイナス値を大きくしてさらに引き寄せる */
+    margin: -20px 0 0px 0 !important;
     font-size: 0.95rem;
     line-height: 1.2;
 }
 
 @media (max-width: 600px) {
 	.card-content {
-    padding: 10px;
-    border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
+        padding: 10px;
 	}
-	
     .card-content h4 {
-    margin: -30px 0 0px 0 !important; /* マイナス値を大きくしてさらに引き寄せる */
+        margin: -30px 0 0px 0 !important;
 	}
 }
 
-
-
-/* PC時のジグザグ配置 */
 @media (min-width: 601px) {
-    .timeline-card { margin-bottom: -30px; } /* 少し重なりを残す */
+    .timeline-card { margin-bottom: -30px; }
     .timeline-card:nth-child(odd) { left: 0; }
     .timeline-card:nth-child(even) { left: 55%; }
     
@@ -765,14 +709,12 @@ header h1 {
         border-radius: 50%;
         top: 25px;
         z-index: 2;
-        /* 追加・修正部分 */
-        border: 3px solid #fff; /* ドットの周りに白枠を入れると線と馴染みます */
+        border: 3px solid #fff;
     }
     .timeline-card:nth-child(odd)::before { right: -50px; }
     .timeline-card:nth-child(even)::before { left: -50px; }
 }
 
-/* スマホ用の上書き設定 */
 @media (max-width: 600px) {
     .timeline-container::after { left: 20px; margin-left: 0; }
     .timeline-card {
@@ -795,25 +737,19 @@ header h1 {
     }
 }
 
-
-/* --- Wishlist 完全付箋風デザイン（万年筆フォント版） --- */
-
-/* グリッド全体：タイトル等を消したので上部の余白を少し調整 */
+/* Wishlist */
 .wish-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 25px;
-    padding: 10px 0 30px 0; /* 上を少し詰めました */
+    padding: 10px 0 30px 0;
 }
 
-/* 付箋本体：ラフ感（歪み）を控えめにして安定させました */
 .wish-card {
-    background: #fff9c4; /* JSで上書きされますが基本色として */
-    border-radius: 2px;  /* デザイナーさんの好みに合わせてシンプルな角に */
+    background: #fff9c4;
+    border-radius: 2px;
     padding: 20px;
     box-shadow: 2px 4px 8px rgba(0,0,0,0.1);
-    
-    /* 付箋の傾き：前回同様の控えめな設定 */
     transform: rotate(-1deg);
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
@@ -823,9 +759,7 @@ header h1 {
     cursor: pointer;
 }
 
-.wish-card:nth-child(even) {
-    transform: rotate(1deg);
-}
+.wish-card:nth-child(even) { transform: rotate(1deg); }
 
 .wish-card:hover {
     transform: translateY(-5px) rotate(0deg);
@@ -833,7 +767,6 @@ header h1 {
     z-index: 10;
 }
 
-/* テープ部分：前回同様のシンプルな長方形に */
 .wish-card::before {
     content: "";
     position: absolute;
@@ -847,12 +780,10 @@ header h1 {
     z-index: 1;
 }
 
-/* 映画付箋（ピンク）の時のテープ色微調整 */
 .wish-card[style*="#ffd1dc"]::before {
     background: rgba(255, 255, 255, 0.5);
 }
 
-/* タイトル・作成者はそのままのフォント */
 .wish-card h4 {
     color: #333;
     font-size: 1.1rem;
@@ -867,18 +798,15 @@ header h1 {
     font-style: italic;
 }
 
-/* 【重要】メモ部分：ここを万年筆風に変更 */
 .wish-card .memo {
     margin-top: 10px;
-    font-size: 0.95rem; /* 万年筆風は少し大きめが映えます */
-    color: #2c3e50;    /* 濃紺（インクっぽい色） */
+    font-size: 0.95rem;
+    color: #2c3e50;
     line-height: 1.7;
-    /* Klee Oneを優先し、なければ明朝体 */
     font-family: 'Klee One', "Hiragino Mincho ProN", serif; 
     letter-spacing: 0.03em;
 }
 
-/* 種別バッジ */
 .wish-type-badge {
     font-size: 0.75rem;
     font-weight: bold;
@@ -897,7 +825,6 @@ header h1 {
     text-decoration: underline;
 }
 
-/* スマホ対応 */
 @media (max-width: 600px) {
     .wish-grid {
         grid-template-columns: 1fr;
@@ -908,11 +835,10 @@ header h1 {
     }
 }
 
-/* 付箋内の完了ボタン（左下） */
 .wish-done-check {
     position: absolute;
-    top: 12px;    /* bottomからtopに変更 */
-    right: 12px;  /* leftからrightに変更 */
+    top: 12px;
+    right: 12px;
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 50%;
@@ -936,24 +862,21 @@ header h1 {
     border-color: #4caf50;
 }
 
-/* フォーム内の入力要素の幅を統一 */
 .wish-done-input,
 .wish-done-body textarea {
     width: 100%;
-    max-width: 100%; /* 親要素からはみ出さないように */
-    box-sizing: border-box; /* paddingを含めた幅計算にする */
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 12px;
     margin-bottom: 15px;
     border: 1px solid #ddd;
     border-radius: 8px;
-    background-color: #f9f9f9; /* ほんの少しグレーにすると入力感が出ます */
+    background-color: #f9f9f9;
     font-family: inherit;
     font-size: 1rem;
-    appearance: none; /* ブラウザ独自のスタイルをリセット */
+    appearance: none;
 }
 
-/* 星評価（ラジオボタンを星に見せる） */
-/* スライダー自体の見た目を調整 */
 .star-rating-container {
     margin-bottom: 20px;
     position: relative;
@@ -962,10 +885,9 @@ header h1 {
 #ratingRange {
     width: 100%;
     cursor: pointer;
-    accent-color: #ffca28; /* スライダーの色 */
+    accent-color: #ffca28;
 }
 
-/* 星の見た目 */
 .star-display {
     font-size: 24px;
     color: #ffca28;
@@ -973,26 +895,7 @@ header h1 {
     margin-top: 5px;
     font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
 }
-/*.star-rating {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-    gap: 5px;
-}
-.star-rating input { display: none; }
-.star-rating label {
-    font-size: 32px;
-    color: #ddd;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-.star-rating label:hover,
-.star-rating label:hover ~ label,
-.star-rating input:checked ~ label {
-    color: #ffca28;
-}*/
 
-/* 昇格ボタンのグラデーション */
 .submit-btn {
     width: 100%;
     padding: 14px;
@@ -1004,10 +907,15 @@ header h1 {
     cursor: pointer;
     margin-top: 20px;
     box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+    font-size: 1rem;
 }
 
-/*----wishlist 新規追加----*/
-/* 右下固定ボタン (Floating Action Button) */
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* FABボタン（右下固定） */
 .fab-btn {
     position: fixed;
     bottom: 30px;
@@ -1030,7 +938,7 @@ header h1 {
 }
 .fab-btn:active { transform: scale(0.9); }
 
-/* カテゴリー選択（ラジオボタンをおしゃれに） */
+/* カテゴリー選択 */
 .type-selector {
     display: flex;
     gap: 10px;
@@ -1050,4 +958,152 @@ header h1 {
 .type-selector input:checked + label {
     background: #764ba2;
     color: white;
+}
+
+/* ============================================================
+   新規追加フォーム：候補カード・選択確認
+   ============================================================ */
+
+/* 検索ステータステキスト */
+.search-status {
+    font-size: 0.85rem;
+    color: #888;
+    text-align: center;
+    padding: 8px 0;
+}
+
+/* 検索実行ボタン */
+.search-execute-btn {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+.search-execute-btn:hover { opacity: 0.85; }
+
+/* 候補カードのグリッド */
+.candidates-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+/* 候補カード1件 */
+.candidate-card {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    cursor: pointer;
+    background: #fafafa;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.candidate-card:hover {
+    background: #f0f4ff;
+    border-color: #a3c4f3;
+}
+
+/* 候補カードのサムネイル */
+.candidate-cover {
+    width: 52px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 4px;
+    background: #eee;
+    flex-shrink: 0;
+}
+
+/* 候補カードのテキスト情報 */
+.candidate-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.candidate-title {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #333;
+    line-height: 1.3;
+    margin-bottom: 3px;
+    /* 2行以上は省略 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.candidate-creator {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.candidate-meta {
+    font-size: 0.75rem;
+    color: #aaa;
+}
+
+/* 選択済み作品の確認表示 */
+.selected-info {
+    background: #f0f7ff;
+    border: 1.5px solid #a3c4f3;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 4px;
+}
+
+.selected-info-inner {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.selected-cover {
+    width: 44px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 4px;
+    background: #ddd;
+    flex-shrink: 0;
+}
+
+.selected-title {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+/* 選び直しボタン */
+.reselect-btn {
+    display: block;
+    width: 100%;
+    margin: 6px 0 0;
+    padding: 7px;
+    background: none;
+    border: 1px dashed #bbb;
+    border-radius: 8px;
+    color: #888;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.reselect-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: #f5f7ff;
 }

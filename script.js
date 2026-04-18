@@ -1,6 +1,6 @@
-﻿// JavaScript Document/**
-// * 読書・映画記録 完全版
-//
+﻿// JavaScript Document
+// 読書・映画記録 完全版 //
+
 let booksData = [];
 let moviesData = [];
 let wishlistData = [];
@@ -16,12 +16,16 @@ let currentYear = "all";
 let currentTargetType = "";
 let currentTargetCreator = "";
 
+// 新規追加フォーム用：選択した候補の一時保存
+let selectedCandidate = null;
+let addLogType = "book";
+
 const genreColors = {
     "ビジネス": "#a3c4f3",
     "自然科学": "#90dbf4",
     "小説": "#ffcfd2",
     "アニメ": "#cfbaf0",
-    "ヒューマンドラマ": "#f1c0e8",
+    "ドラマ": "#f1c0e8",
     "未分類": "#e2e2e2"
 };
 const extraColors = ['#b9fbc0', '#fbf8cc', '#fde4cf', '#ffcfd2', '#f1c0e8', '#cfbaf0', '#a3c4f3', '#90dbf4', '#8eecf5', '#98f5e1'];
@@ -29,7 +33,9 @@ const extraColors = ['#b9fbc0', '#fbf8cc', '#fde4cf', '#ffcfd2', '#f1c0e8', '#cf
 // あなたのGAS URL
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwRewChtzrow2WHE1PjgZc-ofEOowhbh6Ko64YD0hLbZUzNGb-sZNs4adV-W874K6WS/exec';
 
-// --- 1. 統計・グラフ描画関数 ---
+// ============================================================
+// 1. 統計・グラフ描画関数
+// ============================================================
 
 function changeYear(direction) {
     const allData = [...booksData, ...moviesData];
@@ -240,14 +246,15 @@ function showMonthlyDetail(year, monthIdx) {
     if (monthlyModal) monthlyModal.classList.add('active');
 }
 
-// --- 2. データ読み込み＆表示処理 ---
+// ============================================================
+// 2. データ読み込み＆表示処理
+// ============================================================
 
 async function loadAppData() {
     const CACHE_KEY = 'appData_cache';
     const TIME_KEY = 'appData_time';
     const cachedData = localStorage.getItem(CACHE_KEY);
     const cachedTime = localStorage.getItem(TIME_KEY);
-    // 開発中や頻繁に更新する場合はキャッシュ時間を短く（または無効に）してもOKです
     const isExpired = !cachedTime || (Date.now() - cachedTime > 60000); 
 
     if (cachedData && !isExpired) {
@@ -280,7 +287,9 @@ function renderData(allData) {
     renderWishlist(); 
 }
 
-// --- 3. 共通・連動関数 ---
+// ============================================================
+// 3. 共通・連動関数
+// ============================================================
 
 function updateDisplay(type) {
     const data = type === 'books' ? booksData : moviesData;
@@ -490,7 +499,9 @@ function renderWishlist() {
     }).join('');
 }
 
-// --- 4. モーダル操作系 ---
+// ============================================================
+// 4. モーダル操作系
+// ============================================================
 
 function openWishDoneModal(title, type, creator) {
     currentTargetType = type;
@@ -506,6 +517,10 @@ function openWishDoneModal(title, type, creator) {
         updateStarsRange("3.0");
     }
 
+    // 候補エリアをリセットしてから検索開始
+    resetWishDoneSearchArea();
+    searchCandidatesForWishDone(title, type);
+
     document.getElementById('wishDoneModal').classList.add('active');
 }
 
@@ -516,7 +531,201 @@ function updateStarsRange(val) {
     }
 }
 
-// --- 5. 送信・保存処理 (GAS連携) ---
+// ============================================================
+// 5. タイトル検索・候補表示（GAS経由）
+// ============================================================
+
+/**
+ * 候補カードのHTMLを生成する共通関数
+ */
+function buildCandidateCard(candidate, onClickFn) {
+    const noImg = 'img/no-image.png';
+    const cover = candidate.coverUrl || noImg;
+    const meta = [
+        candidate.publisher,
+        candidate.publishedDate ? candidate.publishedDate + '年' : '',
+        candidate.pageCount ? candidate.pageCount + 'p' : ''
+    ].filter(Boolean).join(' ／ ');
+
+    return `
+        <div class="candidate-card" onclick="${onClickFn}">
+            <img src="${cover}" class="candidate-cover" onerror="this.src='${noImg}'">
+            <div class="candidate-info">
+                <div class="candidate-title">${candidate.title}</div>
+                <div class="candidate-creator">${candidate.creator || ''}</div>
+                ${meta ? `<div class="candidate-meta">${meta}</div>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * 選択済み作品の確認表示HTMLを生成する共通関数
+ */
+function buildSelectedInfo(candidate) {
+    const noImg = 'img/no-image.png';
+    const cover = candidate.coverUrl || noImg;
+    return `
+        <div class="selected-info-inner">
+            <img src="${cover}" class="selected-cover" onerror="this.src='${noImg}'">
+            <div>
+                <div class="selected-title">✅ ${candidate.title}</div>
+                <div class="candidate-creator">${candidate.creator || ''}</div>
+                ${candidate.publishedDate ? `<div class="candidate-meta">${candidate.publishedDate}年</div>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+// --- Wishlist完了モーダル用の検索 ---
+
+function resetWishDoneSearchArea() {
+    selectedCandidate = null;
+    const statusEl = document.getElementById('wishDoneSearchStatus');
+    const candidatesEl = document.getElementById('wishDoneCandidates');
+    const selectedEl = document.getElementById('wishDoneSelectedInfo');
+    if (statusEl) { statusEl.textContent = '🔍 作品情報を検索中...'; statusEl.style.display = 'block'; }
+    if (candidatesEl) candidatesEl.innerHTML = '';
+    if (selectedEl) selectedEl.style.display = 'none';
+}
+
+async function searchCandidatesForWishDone(title, type) {
+    const statusEl = document.getElementById('wishDoneSearchStatus');
+    const candidatesEl = document.getElementById('wishDoneCandidates');
+    const selectedEl = document.getElementById('wishDoneSelectedInfo');
+
+    try {
+        const url = `${SHEET_URL}?action=search&type=${encodeURIComponent(type)}&q=${encodeURIComponent(title)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const results = data.results || [];
+
+        if (results.length === 0) {
+            if (statusEl) statusEl.textContent = '候補が見つかりませんでした。そのまま保存します。';
+            return;
+        }
+
+        if (statusEl) statusEl.style.display = 'none';
+
+        // 候補が1件だけの場合は自動選択
+        if (results.length === 1) {
+            selectWishDoneCandidate(results[0]);
+            return;
+        }
+
+        // 複数件：カード表示
+        if (candidatesEl) {
+            candidatesEl.innerHTML = results.map((c, i) =>
+                buildCandidateCard(c, `selectWishDoneCandidate(${JSON.stringify(c).replace(/"/g, '&quot;')})`)
+            ).join('');
+        }
+
+    } catch (err) {
+        console.error('WishDone検索エラー:', err);
+        if (statusEl) statusEl.textContent = '検索に失敗しました。そのまま保存します。';
+    }
+}
+
+function selectWishDoneCandidate(candidate) {
+    selectedCandidate = candidate;
+    currentTargetCreator = candidate.creator || currentTargetCreator;
+
+    const candidatesEl = document.getElementById('wishDoneCandidates');
+    const selectedEl = document.getElementById('wishDoneSelectedInfo');
+    const statusEl = document.getElementById('wishDoneSearchStatus');
+
+    if (candidatesEl) candidatesEl.innerHTML = '';
+    if (statusEl) statusEl.style.display = 'none';
+    if (selectedEl) {
+        selectedEl.innerHTML = buildSelectedInfo(candidate);
+        selectedEl.style.display = 'block';
+    }
+}
+
+// --- Books/Movies追加モーダル用の検索 ---
+
+function openAddLogModal(type) {
+    addLogType = type;
+    selectedCandidate = null;
+
+    // タイトル・アイコンを設定
+    const titleEl = document.getElementById('addLogTitle');
+    if (titleEl) titleEl.textContent = type === 'book' ? '📚 本を追加' : '🎬 映画を追加';
+
+    // フォームをリセット
+    document.getElementById('addLogSearchInput').value = '';
+    document.getElementById('addLogSearchStatus').style.display = 'none';
+    document.getElementById('addLogCandidates').innerHTML = '';
+    document.getElementById('addLogCreator').value = '';
+    document.getElementById('addLogRating').value = '3.0';
+    document.getElementById('addLogRatingValue').textContent = '3.0';
+    document.getElementById('addLogDate').value = new Date().toLocaleDateString('sv-SE');
+    document.getElementById('addLogReview').value = '';
+
+    // STEP1を表示、STEP2を隠す
+    document.getElementById('addLogStep1').style.display = 'block';
+    document.getElementById('addLogStep2').style.display = 'none';
+
+    document.getElementById('addLogModal').classList.add('active');
+
+    // Enterキーで検索できるようにする
+    const searchInput = document.getElementById('addLogSearchInput');
+    searchInput.onkeydown = (e) => { if (e.key === 'Enter') executeAddLogSearch(); };
+}
+
+async function executeAddLogSearch() {
+    const query = document.getElementById('addLogSearchInput').value.trim();
+    if (!query) return;
+
+    const statusEl = document.getElementById('addLogSearchStatus');
+    const candidatesEl = document.getElementById('addLogCandidates');
+
+    statusEl.textContent = '🔍 検索中...';
+    statusEl.style.display = 'block';
+    candidatesEl.innerHTML = '';
+
+    try {
+        const url = `${SHEET_URL}?action=search&type=${encodeURIComponent(addLogType)}&q=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const results = data.results || [];
+
+        if (results.length === 0) {
+            statusEl.textContent = '候補が見つかりませんでした。タイトルを変えて再検索してみてください。';
+            return;
+        }
+
+        statusEl.style.display = 'none';
+        candidatesEl.innerHTML = results.map(c =>
+            buildCandidateCard(c, `selectAddLogCandidate(${JSON.stringify(c).replace(/"/g, '&quot;')})`)
+        ).join('');
+
+    } catch (err) {
+        console.error('AddLog検索エラー:', err);
+        statusEl.textContent = '検索に失敗しました。時間をおいて再試行してください。';
+    }
+}
+
+function selectAddLogCandidate(candidate) {
+    selectedCandidate = candidate;
+
+    // STEP1を隠してSTEP2を表示
+    document.getElementById('addLogStep1').style.display = 'none';
+    document.getElementById('addLogStep2').style.display = 'block';
+
+    // 選択作品を表示
+    const selectedEl = document.getElementById('addLogSelectedInfo');
+    if (selectedEl) selectedEl.innerHTML = buildSelectedInfo(candidate);
+
+    // 著者・監督を自動入力
+    if (candidate.creator) {
+        document.getElementById('addLogCreator').value = candidate.creator;
+    }
+}
+
+// ============================================================
+// 6. 送信・保存処理（GAS連携）
+// ============================================================
 
 async function sendToGAS(data, btnElement, originalText) {
     try {
@@ -540,7 +749,9 @@ async function sendToGAS(data, btnElement, originalText) {
     }
 }
 
-// --- 6. 初期化とイベントリスナー ---
+// ============================================================
+// 7. 初期化とイベントリスナー
+// ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
     loadAppData();
@@ -580,7 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 各種モーダルの閉じるボタン
+    // モーダルの閉じるボタン
     const modalClose = document.getElementById('modalClose');
     if (modalClose) modalClose.onclick = () => document.getElementById('modal').classList.remove('active');
 
@@ -593,7 +804,57 @@ document.addEventListener('DOMContentLoaded', () => {
     const addWishClose = document.getElementById('addWishClose');
     if (addWishClose) addWishClose.onclick = () => document.getElementById('addWishModal').classList.remove('active');
 
-    // Wishlist追加ボタンでモーダルを開く
+    const addLogClose = document.getElementById('addLogClose');
+    if (addLogClose) addLogClose.onclick = () => document.getElementById('addLogModal').classList.remove('active');
+
+    // Books/Moviesタブの追加ボタン
+    const openAddBookBtn = document.getElementById('openAddBookBtn');
+    if (openAddBookBtn) openAddBookBtn.onclick = () => openAddLogModal('book');
+
+    const openAddMovieBtn = document.getElementById('openAddMovieBtn');
+    if (openAddMovieBtn) openAddMovieBtn.onclick = () => openAddLogModal('movie');
+
+    // AddLogモーダル：検索ボタン
+    const addLogSearchBtn = document.getElementById('addLogSearchBtn');
+    if (addLogSearchBtn) addLogSearchBtn.onclick = executeAddLogSearch;
+
+    // AddLogモーダル：選び直しボタン
+    const addLogResearchBtn = document.getElementById('addLogResearchBtn');
+    if (addLogResearchBtn) {
+        addLogResearchBtn.onclick = () => {
+            selectedCandidate = null;
+            document.getElementById('addLogStep1').style.display = 'block';
+            document.getElementById('addLogStep2').style.display = 'none';
+            document.getElementById('addLogCandidates').innerHTML = '';
+            document.getElementById('addLogSearchStatus').style.display = 'none';
+        };
+    }
+
+    // AddLogモーダル：保存ボタン
+    const submitAddLogBtn = document.getElementById('submitAddLogBtn');
+    if (submitAddLogBtn) {
+        submitAddLogBtn.addEventListener('click', async () => {
+            const title = selectedCandidate ? selectedCandidate.title : document.getElementById('addLogSearchInput').value.trim();
+            if (!title) return alert('タイトルを入力・選択してください');
+
+            const data = {
+                action: 'addLog',
+                type: addLogType,
+                title: title,
+                creator: document.getElementById('addLogCreator').value,
+                date: document.getElementById('addLogDate').value.replace(/-/g, '/'),
+                rating: document.getElementById('addLogRating').value,
+                review: document.getElementById('addLogReview').value,
+                externalId: selectedCandidate ? selectedCandidate.externalId : ''
+            };
+
+            submitAddLogBtn.textContent = '保存中... (AIが情報を生成しています)';
+            submitAddLogBtn.disabled = true;
+            await sendToGAS(data, submitAddLogBtn, '記録に保存する');
+        });
+    }
+
+    // Wishlist追加ボタン
     const openAddWishBtn = document.getElementById('openAddWishBtn');
     if (openAddWishBtn) {
         openAddWishBtn.onclick = () => {
@@ -605,7 +866,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // 「Wishlistに追加する」送信ボタンの処理
+    // Wishlist追加：送信ボタン
     const submitAddWishBtn = document.getElementById('submitAddWishBtn');
     if (submitAddWishBtn) {
         submitAddWishBtn.addEventListener('click', async () => {
@@ -627,21 +888,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 「この内容で記録に保存する（読了・昇格）」送信ボタンの処理
+    // Wishlist完了（昇格）：送信ボタン
     const submitDoneBtn = document.getElementById('submitDoneBtn');
     if (submitDoneBtn) {
         submitDoneBtn.addEventListener('click', async () => {
+            const title = document.getElementById('wishDoneItemName').textContent;
             const data = {
                 action: 'promoteToLog',
-                title: document.getElementById('wishDoneItemName').textContent,
+                title: title,
                 type: currentTargetType,
-                creator: currentTargetCreator,
+                creator: selectedCandidate ? selectedCandidate.creator : currentTargetCreator,
                 date: document.getElementById('doneDate').value.replace(/-/g, '/'),
                 rating: document.getElementById('ratingRange').value,
-                review: document.getElementById('doneMemo').value
+                review: document.getElementById('doneMemo').value,
+                externalId: selectedCandidate ? selectedCandidate.externalId : ''
             };
 
-            submitDoneBtn.textContent = "保存中...";
+            submitDoneBtn.textContent = '保存中... (AIが情報を生成しています)';
             submitDoneBtn.disabled = true;
             await sendToGAS(data, submitDoneBtn, "この内容で記録に保存する");
         });
