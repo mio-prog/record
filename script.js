@@ -508,6 +508,7 @@ function openAddWishModal() {
     wishSelectedCandidate = null;
     document.getElementById('wishTypeBook').checked = true;
     document.getElementById('wishSearchInput').value = '';
+    document.getElementById('wishCreatorInput').value = '';
     document.getElementById('wishSearchStatus').style.display = 'none';
     document.getElementById('wishCandidates').innerHTML = '';
     document.getElementById('newMemo').value = '';
@@ -523,14 +524,20 @@ function openAddWishModal() {
 
     // Enterキー検索 + インクリメンタルサーチ（1秒デバウンス）
     const input = document.getElementById('wishSearchInput');
+    const creatorInput = document.getElementById('wishCreatorInput');
+    const doSearch = debounce(() => executeWishSearch(), 1000);
     input.onkeydown = (e) => { if (e.key === 'Enter') executeWishSearch(); };
-    input.oninput = debounce(() => executeWishSearch(), 1000);
+    input.oninput = doSearch;
+    // 著者名欄の変更でも再検索
+    creatorInput.onkeydown = (e) => { if (e.key === 'Enter') executeWishSearch(); };
+    creatorInput.oninput = doSearch;
 }
 
 async function executeWishSearch() {
     const query = document.getElementById('wishSearchInput').value.trim();
     if (!query) return;
     const type = document.querySelector('input[name="wishType"]:checked').value;
+    const creator = document.getElementById('wishCreatorInput').value.trim();
     const statusEl = document.getElementById('wishSearchStatus');
     const candidatesEl = document.getElementById('wishCandidates');
 
@@ -539,13 +546,14 @@ async function executeWishSearch() {
     candidatesEl.innerHTML = '';
 
     try {
-        const url = `${SHEET_URL}?action=search&type=${encodeURIComponent(type)}&q=${encodeURIComponent(query)}`;
+        const creatorParam = creator ? `&creator=${encodeURIComponent(creator)}` : '';
+        const url = `${SHEET_URL}?action=search&type=${encodeURIComponent(type)}&q=${encodeURIComponent(query)}${creatorParam}`;
         const res = await fetch(url);
         const data = await res.json();
         const results = data.results || [];
 
         if (results.length === 0) {
-            statusEl.textContent = '候補が見つかりませんでした。直接入力で追加できます。';
+            statusEl.textContent = '候補が見つかりませんでした。著者名を加えて再検索するか、直接入力で追加できます。';
             return;
         }
         statusEl.style.display = 'none';
@@ -682,6 +690,7 @@ function openAddLogModal(type) {
     const titleEl = document.getElementById('addLogTitle');
     if (titleEl) titleEl.textContent = type === 'book' ? '📚 本を追加' : '🎬 映画を追加';
     document.getElementById('addLogSearchInput').value = '';
+    document.getElementById('addLogCreatorInput').value = '';
     document.getElementById('addLogSearchStatus').style.display = 'none';
     document.getElementById('addLogCandidates').innerHTML = '';
     document.getElementById('addLogRating').value = '3.0';
@@ -694,25 +703,32 @@ function openAddLogModal(type) {
 
     // Enterキー検索 + インクリメンタルサーチ（1秒デバウンス）
     const input = document.getElementById('addLogSearchInput');
+    const creatorInput = document.getElementById('addLogCreatorInput');
+    const doSearch = debounce(() => executeAddLogSearch(), 1000);
     input.onkeydown = (e) => { if (e.key === 'Enter') executeAddLogSearch(); };
-    input.oninput = debounce(() => executeAddLogSearch(), 1000);
+    input.oninput = doSearch;
+    // 著者名欄の変更でも再検索
+    creatorInput.onkeydown = (e) => { if (e.key === 'Enter') executeAddLogSearch(); };
+    creatorInput.oninput = doSearch;
 }
 
 async function executeAddLogSearch() {
     const query = document.getElementById('addLogSearchInput').value.trim();
     if (!query) return;
+    const creator = document.getElementById('addLogCreatorInput').value.trim();
     const statusEl = document.getElementById('addLogSearchStatus');
     const candidatesEl = document.getElementById('addLogCandidates');
     statusEl.innerHTML = '<span class="search-spinner"></span> 検索中...';
     statusEl.style.display = 'block';
     candidatesEl.innerHTML = '';
     try {
-        const url = `${SHEET_URL}?action=search&type=${encodeURIComponent(addLogType)}&q=${encodeURIComponent(query)}`;
+        const creatorParam = creator ? `&creator=${encodeURIComponent(creator)}` : '';
+        const url = `${SHEET_URL}?action=search&type=${encodeURIComponent(addLogType)}&q=${encodeURIComponent(query)}${creatorParam}`;
         const res = await fetch(url);
         const data = await res.json();
         const results = data.results || [];
         if (results.length === 0) {
-            statusEl.textContent = '候補が見つかりませんでした。タイトルを変えて再検索してみてください。';
+            statusEl.textContent = '候補が見つかりませんでした。著者名を加えて再検索してみてください。';
             return;
         }
         statusEl.style.display = 'none';
