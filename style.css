@@ -510,3 +510,107 @@ header h1 { font-size: 32px; margin-bottom: 20px; }
 
 .reselect-btn { display: block; width: 100%; margin: 6px 0 0; padding: 7px; background: none; border: 1px dashed #bbb; border-radius: 8px; color: #888; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
 .reselect-btn:hover { border-color: #667eea; color: #667eea; background: #f5f7ff; }
+
+/* ============================================================
+   おすすめタブ
+   ============================================================ */
+.recommend-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+.recommend-desc {
+    color: white;
+    font-size: 0.95rem;
+    margin-bottom: 14px;
+    opacity: 0.9;
+}
+.recommend-refresh-btn {
+    padding: 12px 28px;
+    background: white;
+    color: #764ba2;
+    border: none;
+    border-radius: 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.recommend-refresh-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.2); }
+.recommend-refresh-btn:active { transform: scale(0.97); }
+
+.recommend-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: white;
+    font-size: 1rem;
+    padding: 40px 0;
+}
+
+.recommend-empty {
+    text-align: center;
+    color: rgba(255,255,255,0.8);
+    font-size: 1rem;
+    padding: 60px 0;
+}
+
+.recommend-section { margin-bottom: 32px; }
+.recommend-section-title {
+    color: white;
+    font-size: 1.1rem;
+    margin-bottom: 14px;
+    padding-left: 4px;
+}
+
+.recommend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+}
+
+.recommend-card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.recommend-card-type {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #999;
+}
+.recommend-card-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    line-height: 1.4;
+}
+.recommend-card-creator {
+    font-size: 0.85rem;
+    color: #666;
+}
+.recommend-card-reason {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.6;
+    margin-top: 4px;
+    flex: 1;
+}
+.recommend-wish-btn {
+    margin-top: 10px;
+    padding: 8px;
+    background: none;
+    border: 1.5px solid #764ba2;
+    border-radius: 8px;
+    color: #764ba2;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+.recommend-wish-btn:hover { background: #764ba2; color: white; }

@@ -905,6 +905,93 @@ function renderWishlist() {
 // 9. 初期化とイベントリスナー
 // ============================================================
 
+// ============================================================
+// 10. おすすめ機能
+// ============================================================
+
+const RECOMMEND_CACHE_KEY = 'recommend_cache';
+const RECOMMEND_TIME_KEY  = 'recommend_time';
+const RECOMMEND_CACHE_MS  = 24 * 60 * 60 * 1000;
+
+async function loadRecommendations(forceRefresh = false) {
+    const cached     = localStorage.getItem(RECOMMEND_CACHE_KEY);
+    const cachedTime = localStorage.getItem(RECOMMEND_TIME_KEY);
+    const isExpired  = !cachedTime || (Date.now() - cachedTime > RECOMMEND_CACHE_MS);
+
+    if (cached && !isExpired && !forceRefresh) {
+        renderRecommendations(JSON.parse(cached));
+        return;
+    }
+
+    document.getElementById('recommendEmpty').style.display   = 'none';
+    document.getElementById('recommendContent').style.display = 'none';
+    document.getElementById('recommendLoading').style.display = 'flex';
+
+    try {
+        const summaryBooks  = booksData.slice(0, 30).map(b => ({ title: b.title, creator: b.creator, genre: b.genre, tags: b.tags, rating: b.rating }));
+        const summaryMovies = moviesData.slice(0, 30).map(m => ({ title: m.title, creator: m.creator, genre: m.genre, tags: m.tags, rating: m.rating }));
+
+        const response = await fetch(SHEET_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'getRecommendations', books: summaryBooks, movies: summaryMovies })
+        });
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+
+        localStorage.setItem(RECOMMEND_CACHE_KEY, JSON.stringify(data));
+        localStorage.setItem(RECOMMEND_TIME_KEY, Date.now().toString());
+        renderRecommendations(data);
+    } catch (e) {
+        console.error('おすすめ生成エラー:', e);
+        document.getElementById('recommendLoading').style.display = 'none';
+        const emptyEl = document.getElementById('recommendEmpty');
+        emptyEl.textContent = '生成に失敗しました。しばらく待ってから再試行してください。';
+        emptyEl.style.display = 'block';
+    }
+}
+
+function renderRecommendations(data) {
+    document.getElementById('recommendLoading').style.display  = 'none';
+    document.getElementById('recommendContent').style.display  = 'block';
+    document.getElementById('recommendEmpty').style.display    = 'none';
+    renderRecommendSection('recommendForYou',  data.forYou   || []);
+    renderRecommendSection('recommendDare',    data.dare     || []);
+    renderRecommendSection('recommendTrending',data.trending || []);
+}
+
+function renderRecommendSection(containerId, items) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = items.map(item => {
+        const typeIcon  = item.type === 'book' ? '📖' : '🎬';
+        const typeLabel = item.type === 'book' ? 'Book' : 'Movie';
+        const safeTitle   = item.title.replace(/'/g, "\\'");
+        const safeCreator = (item.creator || '').replace(/'/g, "\\'");
+        return `
+        <div class="recommend-card">
+            <div class="recommend-card-type">${typeIcon} ${typeLabel}</div>
+            <div class="recommend-card-title">${item.title}</div>
+            <div class="recommend-card-creator">${item.creator || ''}</div>
+            <div class="recommend-card-reason">${item.reason || ''}</div>
+            <button class="recommend-wish-btn" onclick="openAddWishFromRecommend('${safeTitle}', '${item.type}', '${safeCreator}')">＋ Wishlistへ</button>
+        </div>`;
+    }).join('');
+}
+
+function openAddWishFromRecommend(title, type, creator) {
+    openAddWishModal();
+    if (type === 'book') {
+        document.getElementById('wishTypeBook').checked = true;
+    } else {
+        document.getElementById('wishTypeMovie').checked = true;
+    }
+    const input = document.getElementById('wishSearchInput');
+    const creatorInput = document.getElementById('wishCreatorInput');
+    input.value = title;
+    if (creator) creatorInput.value = creator;
+    executeWishSearch();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadAppData();
 
@@ -917,6 +1004,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (targetTab === 'timeline') renderTimeline();
             else if (targetTab === 'stats') { updateStats(); renderStats(); }
             else if (targetTab === 'wishlist') renderWishlist();
+            else if (targetTab === 'recommend') loadRecommendations();
             else clearFilters(targetTab);
         };
     });
@@ -1049,6 +1137,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent = '保存中...'; btn.disabled = true;
         await sendToGAS(data, btn, 'Wishlistに追加する');
     });
+
+    document.getElementById('recommendRefreshBtn')?.addEventListener('click', () => loadRecommendations(true));
 
     document.getElementById('submitDoneBtn')?.addEventListener('click', async () => {
         const data = {

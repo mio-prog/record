@@ -18,6 +18,7 @@
                 <button class="tab-btn" data-tab="wishlist">📝 Wishlist</button>
                 <button class="tab-btn" data-tab="stats">📊 Stats</button>
                 <button class="tab-btn" data-tab="timeline">⌛ Timeline</button>
+                <button class="tab-btn" data-tab="recommend">✨ おすすめ</button>
             </div>
         </header>
 
@@ -323,6 +324,32 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- おすすめタブ -->
+    <div id="recommendTab" class="tab-content">
+        <div class="recommend-header">
+            <p class="recommend-desc">あなたの記録をもとにAIがおすすめを提案します</p>
+            <button class="recommend-refresh-btn" id="recommendRefreshBtn">🔄 おすすめを生成する</button>
+        </div>
+        <div id="recommendLoading" class="recommend-loading" style="display:none;">
+            <span class="search-spinner"></span> AIが考え中...
+        </div>
+        <div id="recommendContent" style="display:none;">
+            <div class="recommend-section">
+                <h3 class="recommend-section-title">📖 あなたへのおすすめ</h3>
+                <div id="recommendForYou" class="recommend-grid"></div>
+            </div>
+            <div class="recommend-section">
+                <h3 class="recommend-section-title">🎲 あえての一冊・一本</h3>
+                <div id="recommendDare" class="recommend-grid"></div>
+            </div>
+            <div class="recommend-section">
+                <h3 class="recommend-section-title">🔥 話題作から</h3>
+                <div id="recommendTrending" class="recommend-grid"></div>
+            </div>
+        </div>
+        <div id="recommendEmpty" class="recommend-empty">「おすすめを生成する」を押してください</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
