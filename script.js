@@ -851,7 +851,7 @@ function renderWishlist() {
         const safeTitle      = item.title.replace(/'/g, "\\'");
         const safeCreator    = (item.creator || '').replace(/'/g, "\\'");
         const safeCoverUrl   = (item.coverUrl || '').replace(/'/g, "\\'");
-        const safeExternalId = (item.externalId || '').replace(/'/g, "\\'");
+        const safeExternalId = String(item.externalId || '').replace(/'/g, "\\'");
         const hasCover = item.coverUrl && item.coverUrl.trim() !== '';
 
         return `
@@ -994,7 +994,6 @@ document.addEventListener('DOMContentLoaded', () => {
             action:     'addWishlist',
             type:       document.querySelector('input[name="wishType"]:checked').value,
             title:      wishSelectedCandidate.title,
-
             creator:    wishSelectedCandidate.creator || '',
             memo:       document.getElementById('newMemo').value,
             link:       document.getElementById('newLink').value,
