@@ -386,6 +386,28 @@ header h1 { font-size: 32px; margin-bottom: 20px; }
 .wish-card::before { content: ""; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 80px; height: 25px; background: rgba(255,255,255,0.4); box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 1; }
 .wish-card h4 { color: #333; font-size: 1.1rem; margin: 0; line-height: 1.4; font-weight: bold; }
 .wish-card .creator { color: #666; font-size: 0.85rem; font-style: italic; }
+
+/* 画像付きカードのレイアウト */
+.wish-card--with-cover .wish-card-inner {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.wish-cover {
+    width: 56px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+    box-shadow: 1px 2px 4px rgba(0,0,0,0.15);
+}
+
+.wish-card-text {
+    flex: 1;
+    min-width: 0;
+}
 .wish-card .memo { margin-top: 10px; font-size: 0.95rem; color: #2c3e50; line-height: 1.7; font-family: 'Klee One', "Hiragino Mincho ProN", serif; letter-spacing: 0.03em; }
 .wish-type-badge { font-size: 0.75rem; font-weight: bold; color: rgba(0,0,0,0.5); margin-bottom: 5px; border-bottom: 1px dashed rgba(0,0,0,0.2); padding-bottom: 3px; align-self: flex-start; }
 .wish-link { margin-top: auto; text-align: right; font-size: 0.8rem; color: #764ba2; text-decoration: underline; }

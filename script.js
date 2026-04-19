@@ -585,16 +585,45 @@ function showWishManualInput() {
 // 5. モーダル操作系（Wishlist）
 // ============================================================
 
-function openWishDoneModal(title, type, creator) {
+function openWishDoneModal(title, type, creator, coverUrl, externalId) {
     currentTargetType = type;
     currentTargetCreator = creator;
+
+    // Wishlist追加時に保存済みの情報があればそのまま使う
+    if (coverUrl || externalId) {
+        selectedCandidate = {
+            title,
+            creator,
+            coverUrl:   coverUrl || '',
+            externalId: externalId || ''
+        };
+    } else {
+        selectedCandidate = null;
+    }
+
     document.getElementById('wishDoneItemName').textContent = title;
     document.getElementById('doneDate').value = new Date().toLocaleDateString('sv-SE');
     document.getElementById('doneMemo').value = '';
     const ratingRange = document.getElementById('ratingRange');
     if (ratingRange) { ratingRange.value = "3.0"; updateStarsRange("3.0"); }
-    resetWishDoneSearchArea();
-    searchCandidatesForWishDone(title, type);
+
+    // 保存済み画像があれば表示、なければ検索
+    const selectedEl  = document.getElementById('wishDoneSelectedInfo');
+    const statusEl    = document.getElementById('wishDoneSearchStatus');
+    const candidatesEl = document.getElementById('wishDoneCandidates');
+    candidatesEl.innerHTML = '';
+
+    if (selectedCandidate && selectedCandidate.coverUrl) {
+        statusEl.style.display = 'none';
+        selectedEl.innerHTML = buildSelectedInfo(selectedCandidate);
+        selectedEl.style.display = 'block';
+    } else {
+        selectedEl.style.display = 'none';
+        statusEl.textContent = '🔍 作品情報を検索中...';
+        statusEl.style.display = 'block';
+        searchCandidatesForWishDone(title, type);
+    }
+
     document.getElementById('wishDoneModal').classList.add('active');
 }
 
@@ -819,15 +848,31 @@ function renderWishlist() {
         const icon = item.type === 'book' ? '📖' : '🎬';
         const typeLabel = item.type === 'book' ? 'Book' : 'Movie';
         const stickyColor = item.type === 'book' ? '#fff9c4' : '#ffd1dc';
-        const safeTitle = item.title.replace(/'/g, "\\'");
-        const safeCreator = (item.creator || '').replace(/'/g, "\\'");
+        const safeTitle      = item.title.replace(/'/g, "\\'");
+        const safeCreator    = (item.creator || '').replace(/'/g, "\\'");
+        const safeCoverUrl   = (item.coverUrl || '').replace(/'/g, "\\'");
+        const safeExternalId = (item.externalId || '').replace(/'/g, "\\'");
+        const hasCover = item.coverUrl && item.coverUrl.trim() !== '';
+
         return `
-        <div class="wish-card" style="background: ${stickyColor};">
+        <div class="wish-card ${hasCover ? 'wish-card--with-cover' : ''}" style="background: ${stickyColor};">
+            <div class="wish-done-check" title="記録へ昇格"
+                 onclick="event.stopPropagation(); openWishDoneModal('${safeTitle}', '${item.type}', '${safeCreator}', '${safeCoverUrl}', '${safeExternalId}')">✔</div>
+            ${hasCover ? `
+            <div class="wish-card-inner">
+                <img src="${item.coverUrl}" class="wish-cover" onerror="this.style.display='none'">
+                <div class="wish-card-text">
+                    <div class="wish-type-badge">${icon} ${typeLabel}</div>
+                    <h4>${item.title}</h4>
+                    <div class="creator">${item.creator || ''}</div>
+                </div>
+            </div>
+            ` : `
             <div class="wish-type-badge">${icon} ${typeLabel}</div>
-            <div class="wish-done-check" title="記録へ昇格" onclick="event.stopPropagation(); openWishDoneModal('${safeTitle}', '${item.type}', '${safeCreator}')">✔</div>
             <h4>${item.title}</h4>
             <div class="creator">${item.creator || ''}</div>
-            <div class="memo">${(item.memo || '').replace(/\n/g, '<br>')}</div>
+            `}
+            ${item.memo ? `<div class="memo">${item.memo.replace(/\n/g, '<br>')}</div>` : ''}
             ${item.link ? `<a href="${item.link}" target="_blank" class="wish-link" onclick="event.stopPropagation()">🔗 リンク</a>` : ''}
         </div>`;
     }).join('');
@@ -946,12 +991,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('submitAddWishBtn')?.addEventListener('click', async () => {
         if (!wishSelectedCandidate) return alert('作品を選択してください');
         const data = {
-            action: 'addWishlist',
-            type: document.querySelector('input[name="wishType"]:checked').value,
-            title: wishSelectedCandidate.title,
-            creator: wishSelectedCandidate.creator || '',
-            memo: document.getElementById('newMemo').value,
-            link: document.getElementById('newLink').value
+            action:     'addWishlist',
+            type:       document.querySelector('input[name="wishType"]:checked').value,
+            title:      wishSelectedCandidate.title,
+
+            creator:    wishSelectedCandidate.creator || '',
+            memo:       document.getElementById('newMemo').value,
+            link:       document.getElementById('newLink').value,
+            coverUrl:   wishSelectedCandidate.coverUrl   || '',
+            externalId: wishSelectedCandidate.externalId || ''
         };
         const btn = document.getElementById('submitAddWishBtn');
         btn.textContent = '保存中...'; btn.disabled = true;
