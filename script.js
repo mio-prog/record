@@ -1,4 +1,4 @@
-﻿// JavaScript Document
+// JavaScript Document
 // 読書・映画記録 完全版 //
 
 let booksData = [];
@@ -581,6 +581,25 @@ function showWishManualInput() {
     document.getElementById('addWishStep2Manual').style.display = 'block';
 }
 
+// Wishlist削除確認
+let wishDeleteTargetTitle = "";
+
+function openWishDeleteConfirm(title) {
+    wishDeleteTargetTitle = title;
+    document.getElementById('wishDeleteTitle').textContent = `「${title}」`;
+    document.getElementById('wishDeleteModal').classList.add('active');
+}
+
+async function executeWishDelete() {
+    const btn = document.getElementById('wishDeleteExecuteBtn');
+    btn.textContent = '削除中...';
+    btn.disabled = true;
+    await sendToGAS(
+        { action: 'deleteWishlist', title: wishDeleteTargetTitle },
+        btn, '削除する'
+    );
+}
+
 // ============================================================
 // 5. モーダル操作系（Wishlist）
 // ============================================================
@@ -856,8 +875,12 @@ function renderWishlist() {
 
         return `
         <div class="wish-card ${hasCover ? 'wish-card--with-cover' : ''}" style="background: ${stickyColor};">
-            <div class="wish-done-check" title="記録へ昇格"
-                 onclick="event.stopPropagation(); openWishDoneModal('${safeTitle}', '${item.type}', '${safeCreator}', '${safeCoverUrl}', '${safeExternalId}')">✔</div>
+            <div class="wish-card-actions">
+                <div class="wish-done-check" title="記録へ昇格"
+                     onclick="event.stopPropagation(); openWishDoneModal('${safeTitle}', '${item.type}', '${safeCreator}', '${safeCoverUrl}', '${safeExternalId}')">✔</div>
+                <div class="wish-delete-btn" title="削除"
+                     onclick="event.stopPropagation(); openWishDeleteConfirm('${safeTitle}')">✕</div>
+            </div>
             ${hasCover ? `
             <div class="wish-card-inner">
                 <img src="${item.coverUrl}" class="wish-cover" onerror="this.style.display='none'">
@@ -925,6 +948,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('wishDoneClose')?.addEventListener('click', () => document.getElementById('wishDoneModal').classList.remove('active'));
     document.getElementById('addWishClose')?.addEventListener('click', () => document.getElementById('addWishModal').classList.remove('active'));
     document.getElementById('addLogClose')?.addEventListener('click', () => document.getElementById('addLogModal').classList.remove('active'));
+
+    // Wishlist削除モーダル
+    document.getElementById('wishDeleteClose')?.addEventListener('click', () => document.getElementById('wishDeleteModal').classList.remove('active'));
+    document.getElementById('wishDeleteCancelBtn')?.addEventListener('click', () => document.getElementById('wishDeleteModal').classList.remove('active'));
+    document.getElementById('wishDeleteExecuteBtn')?.addEventListener('click', executeWishDelete);
 
     // 詳細モーダルの編集・保存・削除ボタン
     document.getElementById('modalEditBtn')?.addEventListener('click', openEditMode);
