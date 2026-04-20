@@ -79,7 +79,7 @@ header h1 { font-size: 32px; margin-bottom: 20px; }
     background: white; border-radius: 10px; overflow: hidden;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     transition: transform 0.3s, box-shadow 0.3s;
-    cursor: pointer; display: flex; flex-direction: column;
+    cursor: pointer; display: flex; flex-direction: column; position: relative;
 }
 .book-card:hover { transform: translateY(-5px); box-shadow: 0 8px 12px rgba(0,0,0,0.15); }
 
@@ -614,3 +614,22 @@ header h1 { font-size: 32px; margin-bottom: 20px; }
     transition: background 0.2s, color 0.2s;
 }
 .recommend-wish-btn:hover { background: #764ba2; color: white; }
+
+/* お気に入りボタン */
+.fav-btn {
+    position: absolute; top: 6px; right: 6px;
+    background: rgba(255,255,255,0.88); border: none; border-radius: 50%;
+    width: 28px; height: 28px; font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18); transition: transform 0.15s;
+    z-index: 1;
+}
+.fav-btn:hover { transform: scale(1.25); }
+
+.fav-filter-btn {
+    background: none; border: 1px solid #ddd; border-radius: 20px;
+    padding: 4px 12px; font-size: 14px; cursor: pointer; color: #666;
+    transition: all 0.2s; white-space: nowrap;
+}
+.fav-filter-btn:hover { border-color: #e0698a; color: #e0698a; }
+.fav-filter-btn.active { background: #ffe0e8; border-color: #e0698a; color: #e0698a; font-weight: bold; }

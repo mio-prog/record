@@ -4,10 +4,11 @@
 let booksData = [];
 let moviesData = [];
 let wishlistData = [];
-let currentSort = { 
-    books: { key: 'date', asc: false }, 
-    movies: { key: 'date', asc: false } 
+let currentSort = {
+    books: { key: 'date', asc: false },
+    movies: { key: 'date', asc: false }
 };
+let favoriteFilter = { books: false, movies: false };
 let genreChart = null; 
 let myYearlyChart = null; 
 let currentYear = "all"; 
@@ -264,14 +265,21 @@ function updateDisplay(type) {
         const text = (item.title + (item.creator || "") + (item.tags || "")).toLowerCase();
         return text.includes(searchVal) && (genreVal === "" || (item.genre || "") === genreVal);
     });
+    if (favoriteFilter[type]) filtered = filtered.filter(item => item.favorite);
     const sortInfo = currentSort[type];
     filtered.sort((a, b) => {
         let valA = a[sortInfo.key] || "";
         let valB = b[sortInfo.key] || "";
         return sortInfo.asc ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
     });
-    grid.innerHTML = filtered.map(item => `
-        <div class="book-card" onclick="openModal('${type}', '${item.title.replace(/'/g, "\\'")}')">
+    const favBtn = document.getElementById(`favFilter${typeUpper}`);
+    if (favBtn) favBtn.classList.toggle('active', favoriteFilter[type]);
+    grid.innerHTML = filtered.map(item => {
+        const escapedTitle = item.title.replace(/'/g, "\\'");
+        const isFav = !!item.favorite;
+        return `
+        <div class="book-card" onclick="openModal('${type}', '${escapedTitle}')">
+            <button class="fav-btn" onclick="toggleFavoriteItem('${type}','${escapedTitle}',${isFav},event)" title="${isFav ? 'お気に入り解除' : 'お気に入りに追加'}">${isFav ? '❤️' : '🤍'}</button>
             <img src="${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">
             <div class="book-info">
                 <div class="book-title">${item.title}</div>
@@ -279,8 +287,8 @@ function updateDisplay(type) {
                 <div class="book-date">${formatJSTDate(item.date)}</div>
                 <div class="book-rating">${generateStars(item.rating)}</div>
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
     const noRes = document.getElementById(`noResults${typeUpper}`);
     if (noRes) noRes.style.display = filtered.length === 0 ? 'block' : 'none';
 }
@@ -307,7 +315,36 @@ function clearFilters(type) {
     const gFilter = document.getElementById(`genreFilter${typeUpper}`);
     if(sBox) sBox.value = '';
     if(gFilter) gFilter.value = '';
+    favoriteFilter[type] = false;
     updateDisplay(type);
+}
+
+function toggleFavFilter(type) {
+    favoriteFilter[type] = !favoriteFilter[type];
+    updateDisplay(type);
+}
+
+async function toggleFavoriteItem(type, title, currentVal, event) {
+    event.stopPropagation();
+    const newVal = !currentVal;
+    const data = type === 'books' ? booksData : moviesData;
+    const item = data.find(i => i.title === title);
+    if (!item) return;
+    item.favorite = newVal;
+    updateDisplay(type);
+    try {
+        const response = await fetch(SHEET_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'toggleFavorite', title, favorite: newVal })
+        });
+        if (response.ok) {
+            localStorage.removeItem('appData_cache');
+            localStorage.removeItem('appData_time');
+        }
+    } catch(e) {
+        item.favorite = currentVal;
+        updateDisplay(type);
+    }
 }
 
 function filterByTag(type, tagName) {
