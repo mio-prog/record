@@ -279,7 +279,7 @@ function updateDisplay(type) {
         const isFav = !!item.favorite;
         return `
         <div class="book-card" onclick="openModal('${type}', '${escapedTitle}')">
-            <button class="fav-btn" onclick="toggleFavoriteItem('${type}','${escapedTitle}',${isFav},event)" title="${isFav ? 'お気に入り解除' : 'お気に入りに追加'}">${isFav ? '❤️' : '🤍'}</button>
+            <button class="fav-btn" onclick="toggleFavoriteItem('${type}','${escapedTitle}',${isFav},event)" title="${isFav ? 'お気に入り解除' : 'お気に入りに追加'}"><svg viewBox="0 0 24 24" width="14" height="14" fill="${isFav ? '#e0698a' : 'none'}" stroke="${isFav ? '#e0698a' : '#aaa'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></button>
             <img src="${item.coverUrl}" class="book-cover" onerror="this.src='img/no-image.png'">
             <div class="book-info">
                 <div class="book-title">${item.title}</div>
