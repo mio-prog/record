@@ -324,6 +324,31 @@ function toggleFavFilter(type) {
     updateDisplay(type);
 }
 
+async function toggleModalFavorite(type, title, currentVal, event) {
+    event.stopPropagation();
+    const newVal = !currentVal;
+    const data = type === 'books' ? booksData : moviesData;
+    const item = data.find(i => i.title === title);
+    if (!item) return;
+    item.favorite = newVal;
+    renderModalViewMode(item, type);
+    updateDisplay(type);
+    try {
+        const response = await fetch(SHEET_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'toggleFavorite', title, favorite: newVal })
+        });
+        if (response.ok) {
+            localStorage.removeItem('appData_cache');
+            localStorage.removeItem('appData_time');
+        }
+    } catch(e) {
+        item.favorite = currentVal;
+        renderModalViewMode(item, type);
+        updateDisplay(type);
+    }
+}
+
 async function toggleFavoriteItem(type, title, currentVal, event) {
     event.stopPropagation();
     const newVal = !currentVal;
@@ -423,6 +448,11 @@ function renderModalViewMode(item, type) {
     document.getElementById('modalSaveBtn').style.display = 'none';
     document.getElementById('modalDeleteBtn').style.display = 'inline-flex';
     document.getElementById('deleteConfirmArea').style.display = 'none';
+    const favBtn = document.getElementById('modalFavBtn');
+    const isFav = !!item.favorite;
+    favBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="${isFav ? '#e0698a' : 'none'}" stroke="${isFav ? '#e0698a' : '#aaa'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${isFav ? 'お気に入り済み' : 'お気に入り'}`;
+    favBtn.classList.toggle('active', isFav);
+    favBtn.onclick = (e) => toggleModalFavorite(type, item.title, isFav, e);
     setModalEditMode(false);
 }
 
@@ -441,6 +471,7 @@ function setModalEditMode(isEdit) {
     document.getElementById('editFieldsArea').style.display = isEdit ? 'block' : 'none';
     document.getElementById('modalEditBtn').style.display = isEdit ? 'none' : 'inline-flex';
     document.getElementById('modalSaveBtn').style.display = isEdit ? 'inline-flex' : 'none';
+    document.getElementById('modalFavBtn').style.display = isEdit ? 'none' : 'inline-flex';
 }
 
 function openEditMode() {

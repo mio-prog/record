@@ -180,6 +180,27 @@ header h1 { font-size: 32px; margin-bottom: 20px; }
 }
 .modal-delete-btn:hover { opacity: 0.8; }
 
+.modal-fav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 14px;
+    border: 1px solid #ddd;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #fafafa;
+    color: #aaa;
+    transition: opacity 0.2s, border-color 0.2s, color 0.2s;
+}
+.modal-fav-btn.active {
+    border-color: #e0698a;
+    background: #fff0f4;
+    color: #e0698a;
+}
+.modal-fav-btn:hover { opacity: 0.8; }
+
 /* 削除確認ボックス */
 .delete-confirm-box {
     background: #fff5f5;
