@@ -302,6 +302,9 @@
                            placeholder="著者・監督名（任意）" style="margin-bottom: 8px;">
                     <div id="addLogSearchStatus" class="search-status" style="display:none;"></div>
                     <div id="addLogCandidates" class="candidates-grid" style="margin-top: 12px;"></div>
+                    <div id="addLogManualEntryArea" style="display:none; margin-top: 12px; text-align: center;">
+                        <button id="addLogManualBtn" class="reselect-btn" style="width: 100%;">検索せずにこのタイトルで登録する</button>
+                    </div>
                 </div>
                 <!-- STEP 2: 選択後の入力フォーム -->
                 <div id="addLogStep2" style="display:none;">
@@ -320,6 +323,8 @@
                     <input type="date" id="addLogDate" class="wish-done-input">
                     <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">感想・メモ</label>
                     <textarea id="addLogReview" rows="4" class="wish-done-input" placeholder="どんなところが良かった？"></textarea>
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">画像URL（任意）</label>
+                    <input type="url" id="addLogCoverUrl" class="wish-done-input" placeholder="表紙画像のURLを貼り付け（省略可）">
                     <button id="submitAddLogBtn" class="submit-btn">記録に保存する</button>
                     <p style="text-align: center; font-size: 0.75rem; color: #999; margin-top: 8px;">
                         ※あらすじ・タグ・ジャンル・著者名はAIと公式APIが自動で補完します

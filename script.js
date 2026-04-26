@@ -809,10 +809,12 @@ function openAddLogModal(type) {
     document.getElementById('addLogCreatorInput').value = '';
     document.getElementById('addLogSearchStatus').style.display = 'none';
     document.getElementById('addLogCandidates').innerHTML = '';
+    document.getElementById('addLogManualEntryArea').style.display = 'none';
     document.getElementById('addLogRating').value = '3.0';
     document.getElementById('addLogRatingValue').textContent = '3.0';
     document.getElementById('addLogDate').value = new Date().toLocaleDateString('sv-SE');
     document.getElementById('addLogReview').value = '';
+    document.getElementById('addLogCoverUrl').value = '';
     document.getElementById('addLogStep1').style.display = 'block';
     document.getElementById('addLogStep2').style.display = 'none';
     document.getElementById('addLogModal').classList.add('active');
@@ -845,8 +847,10 @@ async function executeAddLogSearch() {
         const results = data.results || [];
         if (results.length === 0) {
             statusEl.textContent = '候補が見つかりませんでした。著者名を加えて再検索してみてください。';
+            document.getElementById('addLogManualEntryArea').style.display = 'block';
             return;
         }
+        document.getElementById('addLogManualEntryArea').style.display = 'none';
         statusEl.style.display = 'none';
         candidatesEl.innerHTML = results.map(c =>
             buildCandidateCard(c, `selectAddLogCandidate(${JSON.stringify(c).replace(/"/g, '&quot;')})`)
@@ -855,6 +859,16 @@ async function executeAddLogSearch() {
         console.error('AddLog検索エラー:', err);
         statusEl.textContent = '検索に失敗しました。時間をおいて再試行してください。';
     }
+}
+
+function proceedAddLogManual() {
+    selectedCandidate = null;
+    const title = document.getElementById('addLogSearchInput').value.trim();
+    const creator = document.getElementById('addLogCreatorInput').value.trim();
+    document.getElementById('addLogStep1').style.display = 'none';
+    document.getElementById('addLogStep2').style.display = 'block';
+    const selectedEl = document.getElementById('addLogSelectedInfo');
+    if (selectedEl) selectedEl.innerHTML = `<div class="selected-info-text"><p style="font-weight:bold;">${title}</p>${creator ? `<p style="color:#666;font-size:0.9rem;">${creator}</p>` : ''}</div>`;
 }
 
 function selectAddLogCandidate(candidate) {
@@ -1130,18 +1144,22 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('addLogSearchStatus').style.display = 'none';
     });
 
+    document.getElementById('addLogManualBtn')?.addEventListener('click', proceedAddLogManual);
+
     document.getElementById('submitAddLogBtn')?.addEventListener('click', async () => {
         const title = selectedCandidate ? selectedCandidate.title : document.getElementById('addLogSearchInput').value.trim();
         if (!title) return alert('タイトルを入力・選択してください');
+        const manualCoverUrl = document.getElementById('addLogCoverUrl').value.trim();
         const data = {
             action: 'addLog',
             type: addLogType,
             title: title,
-            creator: selectedCandidate ? selectedCandidate.creator : '',
+            creator: selectedCandidate ? selectedCandidate.creator : document.getElementById('addLogCreatorInput').value.trim(),
             date: document.getElementById('addLogDate').value.replace(/-/g, '/'),
             rating: document.getElementById('addLogRating').value,
             review: document.getElementById('addLogReview').value,
-            externalId: selectedCandidate ? selectedCandidate.externalId : ''
+            externalId: selectedCandidate ? selectedCandidate.externalId : '',
+            coverUrl: manualCoverUrl
         };
         const btn = document.getElementById('submitAddLogBtn');
         btn.textContent = '保存中... (AIが情報を生成しています)';
