@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>📚🎬 読書・映画記録</title>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚🎬 読書・映画記録</h1>
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="books">📚 Books</button>
+                <button class="tab-btn" data-tab="movies">🎬 Movies</button>
+                <button class="tab-btn" data-tab="wishlist">📝 Wishlist</button>
+                <button class="tab-btn" data-tab="stats">📊 Stats</button>
+                <button class="tab-btn" data-tab="timeline">⌛ Timeline</button>
+                <button class="tab-btn" data-tab="recommend">✨ おすすめ</button>
+                <button class="tab-btn" data-tab="design">📐 デザイン本</button>
+            </div>
+        </header>
+
+        <div id="booksTab" class="tab-content active">
+            <div class="controls">
+                <div class="search-area">
+                    <input type="text" class="search-box" id="searchBoxBooks" placeholder="タイトル・著者・タグで検索...">
+                    <select id="genreFilterBooks" class="genre-filter">
+                        <option value="">すべてのジャンル</option>
+                    </select>
+                    <button class="fav-filter-btn" id="favFilterBooks" onclick="toggleFavFilter('books')"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> お気に入りのみ</button>
+                    <button class="clear-btn" onclick="clearFilters('books')">すべてクリア</button>
+                </div>
+                <div class="sort-buttons">
+                    <button class="sort-btn active" data-sort="date" data-type="books">📅 読了日順 <span id="dateOrderBooks">↓</span></button>
+                    <button class="sort-btn" data-sort="title" data-type="books">🔤 タイトル順 <span id="titleOrderBooks">↑</span></button>
+                    <button class="sort-btn" data-sort="rating" data-type="books">⭐ 評価順 <span id="ratingOrderBooks">↓</span></button>
+                </div>
+            </div>
+            <div class="books-grid" id="booksGrid"></div>
+            <div class="no-results" id="noResultsBooks" style="display: none;">検索結果が見つかりませんでした</div>
+            <button class="fab-btn" id="openAddBookBtn" title="本を追加">＋</button>
+        </div>
+
+        <div id="moviesTab" class="tab-content">
+            <div class="controls">
+                <div class="search-area">
+                    <input type="text" class="search-box" id="searchBoxMovies" placeholder="タイトル・監督・タグで検索...">
+                    <select id="genreFilterMovies" class="genre-filter">
+                        <option value="">すべてのジャンル</option>
+                    </select>
+                    <button class="fav-filter-btn" id="favFilterMovies" onclick="toggleFavFilter('movies')"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> お気に入りのみ</button>
+                    <button class="clear-btn" onclick="clearFilters('movies')">すべてクリア</button>
+                </div>
+                <div class="sort-buttons">
+                    <button class="sort-btn active" data-sort="date" data-type="movies">📅 視聴日順 <span id="dateOrderMovies">↓</span></button>
+                    <button class="sort-btn" data-sort="title" data-type="movies">🔤 タイトル順 <span id="titleOrderMovies">↑</span></button>
+                    <button class="sort-btn" data-sort="rating" data-type="movies">⭐ 評価順 <span id="ratingOrderMovies">↓</span></button>
+                </div>
+            </div>
+            <div class="books-grid" id="moviesGrid"></div>
+            <div class="no-results" id="noResultsMovies" style="display: none;">検索結果が見つかりませんでした</div>
+            <button class="fab-btn" id="openAddMovieBtn" title="映画を追加">＋</button>
+        </div>
+    </div>
+
+    <!-- 詳細モーダル -->
+    <div class="modal" id="modal">
+        <div class="modal-content" id="modalContent">
+            <button class="modal-close" id="modalClose">×</button>
+
+            <div class="modal-header">
+                <div class="modal-cover" id="modalCover"></div>
+                <div class="modal-basic-info">
+                    <div class="modal-title" id="modalTitle"></div>
+                    <div class="modal-author" id="modalAuthor"></div>
+                    <div class="modal-date" id="modalDate"></div>
+                    <div class="modal-rating" id="modalRating"></div>
+                </div>
+            </div>
+
+            <!-- 編集・保存ボタンバー（ヘッダーの直下） -->
+            <div class="modal-action-bar">
+                <button class="modal-edit-btn" id="modalEditBtn">✏️ 編集</button>
+                <button class="modal-save-btn" id="modalSaveBtn" style="display:none;">💾 保存</button>
+                <button class="modal-fav-btn" id="modalFavBtn" title="お気に入りに追加"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> お気に入り</button>
+                <button class="modal-delete-btn" id="modalDeleteBtn">🗑️ 削除</button>
+            </div>
+
+            <!-- 削除確認エリア（初期非表示） -->
+            <div id="deleteConfirmArea" style="display:none;">
+                <div class="delete-confirm-box">
+                    <p class="delete-confirm-text">本当に削除しますか？<br><span id="deleteConfirmTitle"></span></p>
+                    <div class="delete-confirm-buttons">
+                        <button id="deleteCancelBtn" class="delete-cancel-btn">キャンセル</button>
+                        <button id="deleteExecuteBtn" class="delete-execute-btn">削除する</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 編集フィールドエリア（初期非表示） -->
+            <div id="editFieldsArea" style="display:none;"></div>
+
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="modal-section-title" id="modalReviewTitle">📝 感想</div>
+                    <div class="modal-section-content" id="modalReview"></div>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title" id="modalSynopsisTitle">📖 あらすじ</div>
+                    <div class="modal-section-content" id="modalSynopsis"></div>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">🏷️ タグ</div>
+                    <div class="modal-tags" id="modalTags"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 統計タブ -->
+    <div id="statsTab" class="tab-content">
+        <div class="year-selector">
+            <button onclick="changeYear(-1)">◀</button>
+            <h2 id="currentYearDisplay">すべて</h2>
+            <button onclick="changeYear(1)">▶</button>
+        </div>
+        <div class="stats-summary">
+            <div class="stat-card"><h3>読書数</h3><p id="totalBooks">0</p></div>
+            <div class="stat-card"><h3>映画数</h3><p id="totalMovies">0</p></div>
+            <div class="stat-card"><h3>平均評価</h3><p id="avgRating">0.0</p></div>
+        </div>
+        <div class="canvas-wrapper">
+            <canvas id="genreChart"></canvas>
+            <div id="customLegend" class="custom-legend"></div>
+        </div>
+        <div class="stats-container">
+            <canvas id="yearlyChart"></canvas>
+        </div>
+    </div>
+
+    <!-- 月間リスト表示用ミニモーダル -->
+    <div id="monthlyModal" class="modal">
+        <div class="modal-content mini-modal">
+            <div class="modal-header">
+                <h3 id="monthlyModalTitle">月間記録</h3>
+                <button class="modal-close" id="monthlyModalClose">×</button>
+            </div>
+            <div id="monthlyListContainer" class="mini-card-grid"></div>
+        </div>
+    </div>
+
+    <!-- タイムラインタブ -->
+    <div id="timelineTab" class="tab-content">
+        <div class="timeline-container" id="timelineContainer"></div>
+    </div>
+
+    <!-- Wishlistタブ -->
+    <div id="wishlistTab" class="tab-content">
+        <div id="wishlistGrid" class="wish-grid"></div>
+        <button id="openAddWishBtn" class="fab-btn">＋</button>
+    </div>
+
+    <!-- Wishlist新規追加モーダル -->
+    <div id="addWishModal" class="modal">
+        <div class="modal-content" style="max-width: 440px;">
+            <button class="modal-close" id="addWishClose">×</button>
+            <div class="modal-header" style="margin-bottom: 0;">
+                <h3>✨ 気になるものを追加</h3>
+            </div>
+            <div style="padding: 20px;">
+                <!-- カテゴリー選択 -->
+                <label style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #666;">カテゴリー</label>
+                <div class="type-selector" style="margin-bottom: 16px;">
+                    <input type="radio" id="wishTypeBook" name="wishType" value="book" checked>
+                    <label for="wishTypeBook">📖 Book</label>
+                    <input type="radio" id="wishTypeMovie" name="wishType" value="movie">
+                    <label for="wishTypeMovie">🎬 Movie</label>
+                </div>
+
+                <!-- STEP 1: タイトル検索 -->
+                <div id="addWishStep1">
+                    <label style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #666;">タイトルで検索</label>
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <input type="text" id="wishSearchInput" class="wish-done-input"
+                               placeholder="タイトルを入力..." style="margin-bottom:0; flex:1;">
+                        <button id="wishSearchBtn" class="search-execute-btn">検索</button>
+                    </div>
+                    <input type="text" id="wishCreatorInput" class="wish-done-input"
+                           placeholder="著者・監督名（任意）" style="margin-bottom: 8px;">
+                    <div id="wishSearchStatus" class="search-status" style="display:none;"></div>
+                    <div id="wishCandidates" class="candidates-grid" style="margin-top: 12px;"></div>
+
+                    <!-- 検索せず手動入力で進む場合 -->
+                    <button id="wishSkipSearchBtn" class="reselect-btn" style="margin-top: 10px;">
+                        ✏️ タイトルを直接入力して追加する
+                    </button>
+                </div>
+
+                <!-- STEP 2: 確認・メモ入力 -->
+                <div id="addWishStep2" style="display:none;">
+                    <div id="wishSelectedInfo" class="selected-info" style="margin-bottom: 12px;"></div>
+                    <button id="wishResearchBtn" class="reselect-btn">🔄 別の作品を選び直す</button>
+
+                    <label style="display:block; margin: 14px 0 5px; font-size: 0.9rem; color: #666;">メモ（なぜ気になった？）</label>
+                    <textarea id="newMemo" rows="3" class="wish-done-input" placeholder="なぜ気になった？"></textarea>
+
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">リンク（任意）</label>
+                    <input type="url" id="newLink" class="wish-done-input" placeholder="AmazonやオフィシャルサイトのURL">
+
+                    <button id="submitAddWishBtn" class="submit-btn">Wishlistに追加する</button>
+                </div>
+
+                <!-- STEP 2b: 手動入力 -->
+                <div id="addWishStep2Manual" style="display:none;">
+                    <label style="display:block; margin-bottom: 5px; font-size: 0.9rem; color: #666;">タイトル</label>
+                    <input type="text" id="newTitleManual" class="wish-done-input" placeholder="作品名を入力...">
+
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">著者・監督</label>
+                    <input type="text" id="newCreatorManual" class="wish-done-input" placeholder="名前を入力...">
+
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">メモ</label>
+                    <textarea id="newMemoManual" rows="3" class="wish-done-input" placeholder="なぜ気になった？"></textarea>
+
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">リンク（任意）</label>
+                    <input type="url" id="newLinkManual" class="wish-done-input" placeholder="AmazonやオフィシャルサイトのURL">
+
+                    <button id="wishBackToSearchBtn" class="reselect-btn">🔍 検索に戻る</button>
+                    <button id="submitAddWishManualBtn" class="submit-btn">Wishlistに追加する</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wishlist完了（昇格）モーダル -->
+    <div id="wishDoneModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>🎉 読了・鑑賞おめでとう！</h3>
+                <button class="modal-close" id="wishDoneClose">×</button>
+            </div>
+            <div class="wish-done-body" style="padding: 20px;">
+                <p id="wishDoneItemName" style="font-weight: bold; margin-bottom: 20px; color: #333; font-size: 1.1rem; border-left: 4px solid #764ba2; padding-left: 10px;"></p>
+                <div id="wishDoneSearchArea">
+                    <div id="wishDoneSearchStatus" class="search-status">🔍 作品情報を検索中...</div>
+                    <div id="wishDoneCandidates" class="candidates-grid"></div>
+                    <div id="wishDoneSelectedInfo" class="selected-info" style="display:none;"></div>
+                </div>
+                <div class="star-rating-container" style="margin-bottom: 20px; margin-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 0.9rem; color: #666;">評価（スライドして調整）</span>
+                        <span id="starValueRange" style="font-weight: bold; color: #ffca28; font-size: 1.5rem;">3.0</span>
+                    </div>
+                    <input type="range" id="ratingRange" min="0" max="5" step="0.5" value="3.0"
+                           style="width: 100%; cursor: pointer; accent-color: #ffca28;"
+                           oninput="updateStarsRange(this.value)">
+                </div>
+                <label for="doneDate" style="display: block; margin: 15px 0 5px; font-size: 0.9rem; color: #666;">完了日</label>
+                <input type="date" id="doneDate" class="wish-done-input">
+                <label for="doneMemo" style="display: block; margin: 15px 0 5px; font-size: 0.9rem; color: #666;">感想・メモ</label>
+                <textarea id="doneMemo" rows="4" class="wish-done-input" placeholder="どんなところが良かった？"></textarea>
+                <button id="submitDoneBtn" class="submit-btn">この内容で記録に保存する</button>
+                <p style="text-align: center; font-size: 0.8rem; color: #999; margin-top: 10px;">※送信するとWishlistから削除されます</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wishlist削除確認モーダル -->
+    <div id="wishDeleteModal" class="modal">
+        <div class="modal-content" style="max-width: 360px;">
+            <button class="modal-close" id="wishDeleteClose">×</button>
+            <div style="padding: 24px 20px 20px;">
+                <div class="delete-confirm-box">
+                    <p class="delete-confirm-text">Wishlistから削除しますか？<br><span id="wishDeleteTitle"></span></p>
+                    <div class="delete-confirm-buttons">
+                        <button id="wishDeleteCancelBtn" class="delete-cancel-btn">キャンセル</button>
+                        <button id="wishDeleteExecuteBtn" class="delete-execute-btn">削除する</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Books/Movies 新規追加モーダル -->
+    <div id="addLogModal" class="modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <button class="modal-close" id="addLogClose">×</button>
+            <div class="modal-header" style="margin-bottom: 0;">
+                <h3 id="addLogTitle">📚 本を追加</h3>
+            </div>
+            <div style="padding: 20px;">
+                <!-- STEP 1: タイトル検索 -->
+                <div id="addLogStep1">
+                    <label style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #666;">タイトルで検索</label>
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <input type="text" id="addLogSearchInput" class="wish-done-input"
+                               placeholder="タイトルを入力..." style="margin-bottom:0; flex:1;">
+                        <button id="addLogSearchBtn" class="search-execute-btn">検索</button>
+                    </div>
+                    <input type="text" id="addLogCreatorInput" class="wish-done-input"
+                           placeholder="著者・監督名（任意）" style="margin-bottom: 8px;">
+                    <div id="addLogSearchStatus" class="search-status" style="display:none;"></div>
+                    <div id="addLogCandidates" class="candidates-grid" style="margin-top: 12px;"></div>
+                    <div id="addLogManualEntryArea" style="display:none; margin-top: 12px; text-align: center;">
+                        <button id="addLogManualBtn" class="reselect-btn" style="width: 100%;">検索せずにこのタイトルで登録する</button>
+                    </div>
+                </div>
+                <!-- STEP 2: 選択後の入力フォーム -->
+                <div id="addLogStep2" style="display:none;">
+                    <div id="addLogSelectedInfo" class="selected-info"></div>
+                    <button id="addLogResearchBtn" class="reselect-btn">🔄 別の作品を選び直す</button>
+                    <div class="star-rating-container" style="margin: 16px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.9rem; color: #666;">評価</span>
+                            <span id="addLogRatingValue" style="font-weight: bold; color: #ffca28; font-size: 1.5rem;">3.0</span>
+                        </div>
+                        <input type="range" id="addLogRating" min="0" max="5" step="0.5" value="3.0"
+                               style="width: 100%; cursor: pointer; accent-color: #ffca28;"
+                               oninput="document.getElementById('addLogRatingValue').textContent = parseFloat(this.value).toFixed(1)">
+                    </div>
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">完了日</label>
+                    <input type="date" id="addLogDate" class="wish-done-input">
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">感想・メモ</label>
+                    <textarea id="addLogReview" rows="4" class="wish-done-input" placeholder="どんなところが良かった？"></textarea>
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">画像URL（任意）</label>
+                    <input type="url" id="addLogCoverUrl" class="wish-done-input" placeholder="表紙画像のURLを貼り付け（省略可）">
+                    <button id="submitAddLogBtn" class="submit-btn">記録に保存する</button>
+                    <p style="text-align: center; font-size: 0.75rem; color: #999; margin-top: 8px;">
+                        ※あらすじ・タグ・ジャンル・著者名はAIと公式APIが自動で補完します
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- おすすめタブ -->
+    <div id="recommendTab" class="tab-content">
+        <div class="recommend-header">
+            <p class="recommend-desc">あなたの記録をもとにAIがおすすめを提案します</p>
+            <button class="recommend-refresh-btn" id="recommendRefreshBtn">🔄 おすすめを生成する</button>
+        </div>
+        <div id="recommendLoading" class="recommend-loading" style="display:none;">
+            <span class="search-spinner"></span> AIが考え中...
+        </div>
+        <div id="recommendContent" style="display:none;">
+            <div class="recommend-section">
+                <h3 class="recommend-section-title">📖 あなたへのおすすめ</h3>
+                <div id="recommendForYou" class="recommend-grid"></div>
+            </div>
+            <div class="recommend-section">
+                <h3 class="recommend-section-title">🎲 あえての一冊・一本</h3>
+                <div id="recommendDare" class="recommend-grid"></div>
+            </div>
+            <div class="recommend-section">
+                <h3 class="recommend-section-title">🔥 話題作から</h3>
+                <div id="recommendTrending" class="recommend-grid"></div>
+            </div>
+        </div>
+        <div id="recommendEmpty" class="recommend-empty">「おすすめを生成する」を押してください</div>
+    </div>
+
+    <!-- デザイン本タブ -->
+    <div id="designTab" class="tab-content">
+        <div class="design-controls">
+            <input type="text" class="search-box" id="searchBoxDesign" placeholder="タイトル・著者で検索...">
+            <select id="designCategoryFilter" class="genre-filter">
+                <option value="">すべてのカテゴリ</option>
+                <option value="UX/UI">UX/UI</option>
+                <option value="グラフィック">グラフィック</option>
+                <option value="タイポグラフィ">タイポグラフィ</option>
+                <option value="ブランディング">ブランディング</option>
+                <option value="Web">Web</option>
+                <option value="配色">配色</option>
+                <option value="写真・レイアウト">写真・レイアウト</option>
+                <option value="その他">その他</option>
+            </select>
+        </div>
+        <div id="designGrid" class="design-grid"></div>
+        <button class="fab-btn" id="openAddDesignBtn" title="デザイン本を追加">＋</button>
+    </div>
+
+    <!-- デザイン本棚へ昇格モーダル（Wishlistから） -->
+    <div id="designFromWishModal" class="modal">
+        <div class="modal-content" style="max-width: 440px;">
+            <button class="modal-close" id="designFromWishClose">×</button>
+            <div class="modal-header" style="margin-bottom: 0;">
+                <h3>📐 デザイン本棚に追加</h3>
+            </div>
+            <div style="padding: 20px;">
+                <p id="designFromWishTitle" style="font-weight: bold; margin-bottom: 16px; color: #333; font-size: 1rem; border-left: 4px solid #764ba2; padding-left: 10px;"></p>
+                <label style="display:block; margin-bottom: 5px; font-size: 0.9rem; color: #666;">カテゴリ</label>
+                <select id="designFromWishCategory" class="wish-done-input">
+                    <option value="UX/UI">UX/UI</option>
+                    <option value="グラフィック">グラフィック</option>
+                    <option value="タイポグラフィ">タイポグラフィ</option>
+                    <option value="ブランディング">ブランディング</option>
+                    <option value="Web">Web</option>
+                    <option value="配色">配色</option>
+                    <option value="写真・レイアウト">写真・レイアウト</option>
+                    <option value="その他">その他</option>
+                </select>
+                <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">メモ（どんな本か・特徴など）</label>
+                <textarea id="designFromWishMemo" rows="3" class="wish-done-input" placeholder="どんなデザイン本か…"></textarea>
+                <button id="submitDesignFromWishBtn" class="submit-btn">デザイン本棚に追加する</button>
+                <p style="text-align: center; font-size: 0.8rem; color: #999; margin-top: 10px;">※送信するとWishlistから削除されます</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- デザイン本 直接追加モーダル -->
+    <div id="addDesignModal" class="modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <button class="modal-close" id="addDesignClose">×</button>
+            <div class="modal-header" style="margin-bottom: 0;">
+                <h3>📐 デザイン本を追加</h3>
+            </div>
+            <div style="padding: 20px;">
+                <div id="addDesignStep1">
+                    <label style="display:block; margin-bottom: 6px; font-size: 0.9rem; color: #666;">タイトルで検索</label>
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <input type="text" id="addDesignSearchInput" class="wish-done-input"
+                               placeholder="タイトルを入力..." style="margin-bottom:0; flex:1;">
+                        <button id="addDesignSearchBtn" class="search-execute-btn">検索</button>
+                    </div>
+                    <input type="text" id="addDesignCreatorInput" class="wish-done-input"
+                           placeholder="著者名（任意）" style="margin-bottom: 8px;">
+                    <div id="addDesignSearchStatus" class="search-status" style="display:none;"></div>
+                    <div id="addDesignCandidates" class="candidates-grid" style="margin-top: 12px;"></div>
+                    <div id="addDesignManualArea" style="display:none; margin-top: 12px;">
+                        <button id="addDesignManualBtn" class="reselect-btn" style="width:100%;">✏️ このタイトルで直接登録する</button>
+                    </div>
+                </div>
+                <div id="addDesignStep2" style="display:none;">
+                    <div id="addDesignSelectedInfo" class="selected-info"></div>
+                    <button id="addDesignResearchBtn" class="reselect-btn">🔄 別の作品を選び直す</button>
+                    <label style="display:block; margin: 14px 0 5px; font-size: 0.9rem; color: #666;">カテゴリ</label>
+                    <select id="addDesignCategory" class="wish-done-input">
+                        <option value="UX/UI">UX/UI</option>
+                        <option value="グラフィック">グラフィック</option>
+                        <option value="タイポグラフィ">タイポグラフィ</option>
+                        <option value="ブランディング">ブランディング</option>
+                        <option value="Web">Web</option>
+                        <option value="配色">配色</option>
+                        <option value="写真・レイアウト">写真・レイアウト</option>
+                        <option value="その他">その他</option>
+                    </select>
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">メモ（概要・特徴）</label>
+                    <textarea id="addDesignMemo" rows="3" class="wish-done-input" placeholder="どんなデザイン本か…"></textarea>
+                    <label style="display:block; margin: 0 0 5px; font-size: 0.9rem; color: #666;">画像URL（任意）</label>
+                    <input type="url" id="addDesignCoverUrl" class="wish-done-input" placeholder="表紙画像のURLを貼り付け（省略可）">
+                    <button id="submitAddDesignBtn" class="submit-btn">デザイン本棚に追加する</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
