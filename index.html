@@ -120,6 +120,47 @@
         </div>
     </div>
 
+    <!-- デザイン本 詳細モーダル -->
+    <div class="modal" id="designModal">
+        <div class="modal-content">
+            <button class="modal-close" id="designModalClose">×</button>
+
+            <div class="modal-header">
+                <div class="modal-cover" id="designModalCover"></div>
+                <div class="modal-basic-info">
+                    <div class="modal-title" id="designModalTitle"></div>
+                    <div class="modal-author" id="designModalAuthor"></div>
+                    <div id="designModalCategoryBadge" style="margin-top:6px;"></div>
+                </div>
+            </div>
+
+            <div class="modal-action-bar">
+                <button class="modal-edit-btn" id="designModalEditBtn">✏️ 編集</button>
+                <button class="modal-save-btn" id="designModalSaveBtn" style="display:none;">💾 保存</button>
+                <button class="modal-delete-btn" id="designModalDeleteBtn">🗑️ 削除</button>
+            </div>
+
+            <div id="designDeleteConfirmArea" style="display:none;">
+                <div class="delete-confirm-box">
+                    <p class="delete-confirm-text">本当に削除しますか？<br><span id="designDeleteConfirmTitle"></span></p>
+                    <div class="delete-confirm-buttons">
+                        <button id="designDeleteCancelBtn" class="delete-cancel-btn">キャンセル</button>
+                        <button id="designDeleteExecuteBtn" class="delete-execute-btn">削除する</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="designEditFieldsArea" style="display:none;"></div>
+
+            <div class="modal-body" id="designModalBody">
+                <div class="modal-section">
+                    <div class="modal-section-title">📝 メモ</div>
+                    <div class="modal-section-content" id="designModalMemo"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 統計タブ -->
     <div id="statsTab" class="tab-content">
         <div class="year-selector">

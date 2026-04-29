@@ -902,10 +902,19 @@ async function sendToGAS(data, btnElement, originalText) {
     try {
         const response = await fetch(SHEET_URL, { method: 'POST', body: JSON.stringify(data) });
         if (response.ok) {
+            const result = await response.json().catch(() => ({}));
+            if (result.status === 'error') {
+                alert('保存に失敗しました：' + (result.message || '不明なエラー'));
+                if (btnElement) { btnElement.textContent = originalText; btnElement.disabled = false; }
+                return;
+            }
             alert('保存完了しました！');
             localStorage.removeItem('appData_cache');
             localStorage.removeItem('appData_time');
             location.reload();
+        } else {
+            alert('保存に失敗しました。時間をおいて再試行してください。');
+            if (btnElement) { btnElement.textContent = originalText; btnElement.disabled = false; }
         }
     } catch (e) {
         alert('保存に失敗しました。通信環境を確認してください。');
@@ -1020,7 +1029,7 @@ function renderDesignBooks() {
         const colors = DESIGN_CATEGORY_COLORS[item.category] || DESIGN_CATEGORY_COLORS['その他'];
         const safeTitle = item.title.replace(/'/g, "\\'");
         return `
-        <div class="design-card">
+        <div class="design-card" onclick="openDesignModal('${safeTitle}')" style="cursor:pointer;">
             <div class="design-card-inner">
                 <img src="${item.coverUrl || 'img/no-image.png'}" class="design-cover" onerror="this.src='img/no-image.png'">
                 <div class="design-card-body">
@@ -1126,11 +1135,107 @@ function proceedAddDesignManual() {
 }
 
 // ============================================================
-// 10. 初期化とイベントリスナー
+// 10. デザイン本 詳細モーダル
+// ============================================================
+
+let editingDesignItem = null;
+
+function openDesignModal(title) {
+    const item = designBooksData.find(d => d.title === title);
+    if (!item) return;
+    editingDesignItem = item;
+    renderDesignModalViewMode(item);
+    document.getElementById('designModal').classList.add('active');
+}
+
+function renderDesignModalViewMode(item) {
+    const colors = DESIGN_CATEGORY_COLORS[item.category] || DESIGN_CATEGORY_COLORS['その他'];
+    document.getElementById('designModalTitle').textContent = item.title;
+    document.getElementById('designModalAuthor').textContent = item.author || '';
+    document.getElementById('designModalCover').innerHTML = `<img src="${item.coverUrl || 'img/no-image.png'}" class="book-cover" onerror="this.src='img/no-image.png'">`;
+    document.getElementById('designModalCategoryBadge').innerHTML = `<span class="design-category-badge" style="background:${colors.bg};color:${colors.text};">${item.category || 'その他'}</span>`;
+    document.getElementById('designModalMemo').innerHTML = item.memo
+        ? item.memo.replace(/\n/g, '<br>')
+        : '<span style="color:#aaa;">メモなし</span>';
+    document.getElementById('designEditFieldsArea').style.display = 'none';
+    document.getElementById('designModalBody').style.display = 'block';
+    document.getElementById('designModalEditBtn').style.display = 'inline-flex';
+    document.getElementById('designModalSaveBtn').style.display = 'none';
+    document.getElementById('designModalDeleteBtn').style.display = 'inline-flex';
+    document.getElementById('designDeleteConfirmArea').style.display = 'none';
+}
+
+function openDesignEditMode() {
+    if (!editingDesignItem) return;
+    const item = editingDesignItem;
+    const categoryOptions = DESIGN_CATEGORIES.map(c =>
+        `<option value="${c}" ${c === item.category ? 'selected' : ''}>${c}</option>`
+    ).join('');
+    document.getElementById('designEditFieldsArea').innerHTML = `
+        <div class="edit-field-group">
+            <label class="edit-label">👤 著者</label>
+            <input type="text" id="designEditAuthor" class="edit-input" value="${(item.author || '').replace(/"/g, '&quot;')}">
+        </div>
+        <div class="edit-field-group">
+            <label class="edit-label">📂 カテゴリ</label>
+            <select id="designEditCategory" class="edit-input">${categoryOptions}</select>
+        </div>
+        <div class="edit-field-group">
+            <label class="edit-label">📝 メモ</label>
+            <textarea id="designEditMemo" class="edit-input edit-textarea" rows="5">${item.memo || ''}</textarea>
+        </div>
+    `;
+    document.getElementById('designEditFieldsArea').style.display = 'block';
+    document.getElementById('designModalBody').style.display = 'none';
+    document.getElementById('designModalEditBtn').style.display = 'none';
+    document.getElementById('designModalSaveBtn').style.display = 'inline-flex';
+    document.getElementById('designModalDeleteBtn').style.display = 'none';
+}
+
+async function saveDesignEdit() {
+    if (!editingDesignItem) return;
+    const saveBtn = document.getElementById('designModalSaveBtn');
+    saveBtn.textContent = '保存中...';
+    saveBtn.disabled = true;
+    const data = {
+        action: 'updateDesignBook',
+        originalTitle: editingDesignItem.title,
+        author:   document.getElementById('designEditAuthor').value,
+        category: document.getElementById('designEditCategory').value,
+        memo:     document.getElementById('designEditMemo').value
+    };
+    await sendToGAS(data, saveBtn, '💾 保存');
+}
+
+function openDesignDeleteConfirm() {
+    document.getElementById('designModalEditBtn').style.display = 'none';
+    document.getElementById('designModalDeleteBtn').style.display = 'none';
+    document.getElementById('designModalBody').style.display = 'none';
+    document.getElementById('designDeleteConfirmTitle').textContent = `「${editingDesignItem.title}」`;
+    document.getElementById('designDeleteConfirmArea').style.display = 'block';
+}
+
+function cancelDesignDelete() {
+    document.getElementById('designDeleteConfirmArea').style.display = 'none';
+    document.getElementById('designModalEditBtn').style.display = 'inline-flex';
+    document.getElementById('designModalDeleteBtn').style.display = 'inline-flex';
+    document.getElementById('designModalBody').style.display = 'block';
+}
+
+async function executeDesignDelete() {
+    if (!editingDesignItem) return;
+    const btn = document.getElementById('designDeleteExecuteBtn');
+    btn.textContent = '削除中...';
+    btn.disabled = true;
+    await sendToGAS({ action: 'deleteDesignBook', title: editingDesignItem.title }, btn, '削除する');
+}
+
+// ============================================================
+// 11. 初期化とイベントリスナー
 // ============================================================
 
 // ============================================================
-// 10. おすすめ機能
+// 11. おすすめ機能
 // ============================================================
 
 const RECOMMEND_CACHE_KEY = 'recommend_cache';
@@ -1273,6 +1378,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('modalDeleteBtn')?.addEventListener('click', openDeleteConfirm);
     document.getElementById('deleteCancelBtn')?.addEventListener('click', cancelDelete);
     document.getElementById('deleteExecuteBtn')?.addEventListener('click', executeDelete);
+
+    // デザイン本 詳細モーダル
+    document.getElementById('designModalClose').onclick = () => {
+        document.getElementById('designModal').classList.remove('active');
+        editingDesignItem = null;
+    };
+    document.getElementById('designModalEditBtn')?.addEventListener('click', openDesignEditMode);
+    document.getElementById('designModalSaveBtn')?.addEventListener('click', saveDesignEdit);
+    document.getElementById('designModalDeleteBtn')?.addEventListener('click', openDesignDeleteConfirm);
+    document.getElementById('designDeleteCancelBtn')?.addEventListener('click', cancelDesignDelete);
+    document.getElementById('designDeleteExecuteBtn')?.addEventListener('click', executeDesignDelete);
 
     // Books/Movies追加ボタン
     document.getElementById('openAddBookBtn')?.addEventListener('click', () => openAddLogModal('book'));
