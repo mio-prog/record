@@ -432,6 +432,15 @@ header h1 { font-size: 32px; margin-bottom: 20px; }
 .wish-card .memo { margin-top: 10px; font-size: 0.95rem; color: #2c3e50; line-height: 1.7; font-family: 'Klee One', "Hiragino Mincho ProN", serif; letter-spacing: 0.03em; }
 .wish-type-badge { font-size: 0.75rem; font-weight: bold; color: rgba(0,0,0,0.5); margin-bottom: 5px; border-bottom: 1px dashed rgba(0,0,0,0.2); padding-bottom: 3px; align-self: flex-start; width: fit-content; }
 .wish-link { margin-top: auto; text-align: right; font-size: 0.8rem; color: #764ba2; text-decoration: underline; }
+
+.wish-controls { margin-bottom: 12px; }
+.library-filter-btn { background: rgba(255,255,255,0.25); color: white; border: 1px solid rgba(255,255,255,0.5); border-radius: 20px; padding: 6px 16px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+.library-filter-btn:hover { background: rgba(255,255,255,0.35); }
+.library-filter-btn.active { background: white; color: #667eea; font-weight: bold; }
+.library-badge { margin-top: 6px; font-size: 0.8rem; font-weight: bold; color: #2e7d32; }
+.library-badge a { color: #2e7d32; text-decoration: underline; }
+.library-check-btn { margin-top: 6px; background: none; border: none; font-size: 0.78rem; color: #999; cursor: pointer; padding: 0; text-decoration: underline; }
+.library-check-btn:hover { color: #555; }
 @media (max-width: 600px) {
     .wish-grid { grid-template-columns: 1fr; gap: 20px; }
     .wish-card, .wish-card:nth-child(even) { transform: rotate(0deg); }

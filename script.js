@@ -22,6 +22,7 @@ let currentSort = {
     movies: { key: 'date', asc: false }
 };
 let favoriteFilter = { books: false, movies: false };
+let libraryFilter = false;
 let genreChart = null; 
 let myYearlyChart = null; 
 let currentYear = "all"; 
@@ -964,9 +965,10 @@ function renderTimeline() {
 function renderWishlist() {
     const container = document.getElementById('wishlistGrid');
     if (!container) return;
-    const validData = wishlistData.filter(item => item.title && item.title.trim() !== "");
+    let validData = wishlistData.filter(item => item.title && item.title.trim() !== "");
+    if (libraryFilter) validData = validData.filter(item => item.libraryAvailable);
     if (validData.length === 0) {
-        container.innerHTML = '<p style="color:white; text-align:center; grid-column:1/-1;">リストは空です。右下の「＋」から追加してみましょう！</p>';
+        container.innerHTML = `<p style="color:white; text-align:center; grid-column:1/-1;">${libraryFilter ? '図書館にある本はありません。' : 'リストは空です。右下の「＋」から追加してみましょう！'}</p>`;
         return;
     }
     container.innerHTML = validData.map(item => {
@@ -978,13 +980,20 @@ function renderWishlist() {
         const safeCoverUrl   = (item.coverUrl || '').replace(/'/g, "\\'");
         const safeExternalId = String(item.externalId || '').replace(/'/g, "\\'");
         const hasCover = item.coverUrl && item.coverUrl.trim() !== '';
+        const isBook = item.type === 'book';
+
+        const libraryBadge = item.libraryAvailable
+            ? `<div class="library-badge">${item.libraryReserveUrl ? `<a href="${item.libraryReserveUrl}" target="_blank" onclick="event.stopPropagation()">📚 図書館にあり</a>` : '📚 図書館にあり'}</div>`
+            : isBook && item.externalId
+                ? `<button class="library-check-btn" onclick="checkLibraryStatus('${safeTitle}', event)">🔄 蔵書確認</button>`
+                : '';
 
         return `
         <div class="wish-card ${hasCover ? 'wish-card--with-cover' : ''}" style="background: ${stickyColor};">
             <div class="wish-card-actions">
                 <div class="wish-done-check" title="記録へ昇格"
                      onclick="event.stopPropagation(); openWishDoneModal('${safeTitle}', '${item.type}', '${safeCreator}', '${safeCoverUrl}', '${safeExternalId}')">✔</div>
-                ${item.type === 'book' ? `<div class="wish-design-btn" title="デザイン本棚へ" onclick="event.stopPropagation(); openDesignFromWishModal('${safeTitle}', '${safeCreator}', '${safeCoverUrl}', '${safeExternalId}')">📐</div>` : ''}
+                ${isBook ? `<div class="wish-design-btn" title="デザイン本棚へ" onclick="event.stopPropagation(); openDesignFromWishModal('${safeTitle}', '${safeCreator}', '${safeCoverUrl}', '${safeExternalId}')">📐</div>` : ''}
                 <div class="wish-delete-btn" title="削除"
                      onclick="event.stopPropagation(); openWishDeleteConfirm('${safeTitle}')">✕</div>
             </div>
@@ -1004,8 +1013,40 @@ function renderWishlist() {
             `}
             ${item.memo ? `<div class="memo">${item.memo.replace(/\n/g, '<br>')}</div>` : ''}
             ${item.link ? `<a href="${item.link}" target="_blank" class="wish-link" onclick="event.stopPropagation()">🔗 リンク</a>` : ''}
+            ${libraryBadge}
         </div>`;
     }).join('');
+}
+
+function toggleLibraryFilter() {
+    libraryFilter = !libraryFilter;
+    const btn = document.getElementById('libraryFilterBtn');
+    if (btn) btn.classList.toggle('active', libraryFilter);
+    renderWishlist();
+}
+
+async function checkLibraryStatus(title, event) {
+    event.stopPropagation();
+    const btn = event.currentTarget;
+    const originalText = btn.textContent;
+    btn.textContent = '確認中...';
+    btn.disabled = true;
+    try {
+        const response = await fetch(SHEET_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'checkLibrary', title })
+        });
+        const result = await response.json();
+        const item = wishlistData.find(d => d.title === title);
+        if (item && (result.status === 'success' || result.status === 'ok')) {
+            item.libraryAvailable  = result.libraryAvailable;
+            item.libraryReserveUrl = result.libraryReserveUrl || '';
+        }
+        renderWishlist();
+    } catch (e) {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
 }
 
 // ============================================================
