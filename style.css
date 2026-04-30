@@ -668,11 +668,10 @@ header h1 { font-size: 32px; margin-bottom: 20px; }
 .design-controls .genre-filter { width: auto; flex-shrink: 0; margin: 0; }
 
 .design-grid {
-    display: grid; grid-template-columns: 1fr;
+    display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 12px; margin-bottom: 30px;
 }
-@media (min-width: 600px) { .design-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 900px) { .design-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1024px) { .design-grid { grid-template-columns: repeat(4, 1fr); } }
 
 .design-card {
     background: white; border-radius: 12px;

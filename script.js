@@ -1029,17 +1029,13 @@ function renderDesignBooks() {
         const colors = DESIGN_CATEGORY_COLORS[item.category] || DESIGN_CATEGORY_COLORS['その他'];
         const safeTitle = item.title.replace(/'/g, "\\'");
         return `
-        <div class="design-card" onclick="openDesignModal('${safeTitle}')" style="cursor:pointer;">
-            <div class="design-card-inner">
-                <img src="${item.coverUrl || 'img/no-image.png'}" class="design-cover" onerror="this.src='img/no-image.png'">
-                <div class="design-card-body">
-                    <span class="design-category-badge" style="background:${colors.bg};color:${colors.text};">${item.category || 'その他'}</span>
-                    <div class="design-card-title">${item.title}</div>
-                    <div class="design-card-author">${item.author || ''}</div>
-                    ${item.memo ? `<div class="design-card-memo">${item.memo}</div>` : ''}
-                </div>
+        <div class="book-card" onclick="openDesignModal('${safeTitle}')">
+            <img src="${item.coverUrl || 'img/no-image.png'}" class="book-cover" onerror="this.src='img/no-image.png'">
+            <div class="book-info">
+                <span class="design-category-badge" style="background:${colors.bg};color:${colors.text};display:inline-block;margin-bottom:4px;">${item.category || 'その他'}</span>
+                <div style="font-size:0.85rem;font-weight:bold;color:#333;line-height:1.3;margin-bottom:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${item.title}</div>
+                <div class="book-author">${item.author || ''}</div>
             </div>
-            <button class="design-delete-btn" onclick="confirmDeleteDesignBook('${safeTitle}', event)" title="削除">✕</button>
         </div>`;
     }).join('');
 }
