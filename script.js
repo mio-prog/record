@@ -1032,18 +1032,24 @@ async function checkLibraryStatus(title, event) {
     btn.textContent = '確認中...';
     btn.disabled = true;
     try {
+        console.log('[図書館確認] 送信タイトル:', title);
         const response = await fetch(SHEET_URL, {
             method: 'POST',
             body: JSON.stringify({ action: 'checkLibrary', title })
         });
+        console.log('[図書館確認] HTTPステータス:', response.status);
         const result = await response.json();
+        console.log('[図書館確認] GAS応答:', JSON.stringify(result));
         const item = wishlistData.find(d => d.title === title);
         if (item && (result.status === 'success' || result.status === 'ok')) {
             item.libraryAvailable  = result.libraryAvailable;
             item.libraryReserveUrl = result.libraryReserveUrl || '';
+        } else {
+            console.warn('[図書館確認] 未更新 status:', result.status, 'item found:', !!item);
         }
         renderWishlist();
     } catch (e) {
+        console.error('[図書館確認] fetch失敗:', e);
         btn.textContent = originalText;
         btn.disabled = false;
     }
